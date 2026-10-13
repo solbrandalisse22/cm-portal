@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Tu CM</title>
+<meta name="description" content="Portal de tu community manager: revisá y aprobá tu semana de Instagram, mandá fotos y escribinos.">
+<meta name="theme-color" content="#1F2A44">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tu CM">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F5F6F8;--card:#FFFFFF;--tx:#1B1F2A;--tx2:#5B6272;--tx3:#8A90A0;--line:#E3E6EC;--brand:#1F2A44;--acc:#3D6BFF;--acc-bg:#E8EEFF;
+--ok:#137A4B;--ok-bg:#E3F5EC;--warn:#9A5B00;--warn-bg:#FFF2DB;--bad:#B4232C;--bad-bg:#FDE8E9;--r:14px}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0F1218;--card:#181C25;--tx:#ECEFF5;--tx2:#A7AEBD;--tx3:#7C8394;--line:#2A303C;--brand:#ECEFF5;--acc:#7C9BFF;--acc-bg:#1E2747;
+--ok:#5FD39A;--ok-bg:#12291F;--warn:#F0B35A;--warn-bg:#2E2412;--bad:#FF7A80;--bad-bg:#331518}}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--tx);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+.app{min-height:100vh;display:flex}
+/* nav */
+.side{display:none}
+.bottom{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:5}
+.tab{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--tx3);padding:4px 10px;border-radius:10px;position:relative}
+.tab svg{width:24px;height:24px}
+.tab.on{color:var(--acc)}
+.dot{position:absolute;top:2px;right:12px;width:8px;height:8px;border-radius:50%;background:var(--bad)}
+main{flex:1;min-width:0;padding:20px 16px 96px;max-width:1120px;margin:0 auto}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.hi{font-size:13px;color:var(--tx2)}
+h1{font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+h2{font-size:18px;font-weight:600;margin:22px 0 10px}
+.sub{color:var(--tx2);font-size:14px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.b-rev{background:var(--warn-bg);color:var(--warn)}.b-ok{background:var(--ok-bg);color:var(--ok)}.b-cam{background:var(--acc-bg);color:var(--acc)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.grid{display:grid;grid-template-columns:1fr;gap:14px}
+.prev{aspect-ratio:4/5;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--tx3);font-size:13px;position:relative}
+.prev img{width:100%;height:100%;object-fit:cover;display:block}
+.prev.hist{aspect-ratio:9/16}
+.multi{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.6);color:#fff;font-size:12px;padding:2px 8px;border-radius:999px}
+.nav-img{position:absolute;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.9);color:#111;font-size:18px;display:flex;align-items:center;justify-content:center}
+.body{padding:14px 16px 16px}
+.meta{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--tx2);margin-bottom:6px}
+.tit{font-weight:600;font-size:16px;margin-bottom:6px}
+.cap{font-size:14px;color:var(--tx2);white-space:pre-wrap;max-height:4.5em;overflow:hidden;position:relative}
+.cap.open{max-height:none}
+.more{font-size:13px;color:var(--acc);font-weight:500;margin-top:4px}
+.stk{font-size:13px;background:var(--acc-bg);color:var(--acc);padding:8px 10px;border-radius:10px;margin-top:10px}
+.row{display:flex;gap:8px;margin-top:14px}
+.btn{flex:1;padding:11px 12px;border-radius:12px;font-weight:600;font-size:15px;border:1px solid var(--line);background:var(--card);text-align:center}
+.btn.pri{background:var(--brand);color:var(--bg);border-color:var(--brand)}
+.btn.okb{background:var(--ok);color:#fff;border-color:var(--ok)}
+.btn:disabled{opacity:.5;cursor:default}
+textarea,input[type=text]{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--card);resize:vertical;min-height:52px}
+textarea:focus,input:focus{outline:2px solid var(--acc);outline-offset:1px}
+.coment{margin-top:10px;display:none}.coment.on{display:block}
+.empty{text-align:center;padding:48px 16px;color:var(--tx2)}
+.empty svg{width:48px;height:48px;color:var(--tx3);margin-bottom:8px}
+.drop{border:2px dashed var(--line);border-radius:var(--r);padding:28px 16px;text-align:center;color:var(--tx2);background:var(--card);display:block;cursor:pointer}
+.drop:hover{border-color:var(--acc)}
+.drop svg{width:34px;height:34px;color:var(--acc)}
+.list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.item{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14px}
+.item .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar{height:6px;border-radius:6px;background:var(--line);overflow:hidden;width:90px}.bar i{display:block;height:100%;background:var(--acc);width:0}
+.chat{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.msg{max-width:82%;padding:10px 14px;border-radius:16px;font-size:15px;white-space:pre-wrap}
+.msg.cm{background:var(--card);border:1px solid var(--line);align-self:flex-start;border-bottom-left-radius:4px}
+.msg.cliente{background:var(--brand);color:var(--bg);align-self:flex-end;border-bottom-right-radius:4px}
+.msg small{display:block;font-size:11px;opacity:.65;margin-top:4px}
+.send{display:flex;gap:8px;align-items:flex-end;position:sticky;bottom:84px;background:var(--bg);padding-top:8px}
+.send textarea{min-height:48px}
+.send .btn{flex:0 0 auto}
+.q{margin-bottom:16px}.q label{display:block;font-weight:500;margin-bottom:6px}.q small{color:var(--tx3)}
+.steps{display:flex;gap:6px;margin:10px 0 18px}.steps i{flex:1;height:5px;border-radius:5px;background:var(--line)}.steps i.on{background:var(--acc)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:92px;background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
+.toast.on{opacity:1}
+.err{color:var(--bad);font-size:13px;margin-top:6px}
+.skel{height:220px;border-radius:var(--r);background:linear-gradient(90deg,var(--line),var(--card),var(--line));background-size:200% 100%;animation:sk 1.2s infinite}
+@keyframes sk{to{background-position:-200% 0}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* compu */
+@media (min-width:900px){
+  .bottom{display:none}
+  .side{display:flex;flex-direction:column;gap:4px;width:240px;flex:0 0 240px;padding:24px 14px;border-right:1px solid var(--line);background:var(--card);position:sticky;top:0;height:100vh}
+  .side .logo{font-weight:700;font-size:18px;padding:6px 12px 20px;color:var(--brand)}
+  .side .tab{flex-direction:row;font-size:15px;gap:12px;padding:10px 12px;color:var(--tx2);justify-content:flex-start}
+  .side .tab.on{background:var(--acc-bg);color:var(--acc)}
+  .side .dot{position:static;margin-left:auto}
+  main{padding:32px 40px 48px}
+  h1{font-size:30px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+  .send{bottom:0;padding-bottom:16px}
+  .toast{bottom:28px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="side" id="side" aria-label="Secciones"></nav>
+  <main id="main"><div class="skel"></div></main>
+</div>
+<nav class="bottom" id="bottom" aria-label="Secciones"></nav>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+var API = 'https://script.google.com/macros/s/AKfycbyGJnJGTpics16rlhOZkRXrKDyzGvFZeO5peSJlI6ITBHwW8QCdMuSNoPHUCQV1MMXMJw/exec';
+var MAX_MB = 45;
+var ICON = {
+  semana:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>',
+  material:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8a2 2 0 0 1 2-2h1.5l1.5-2h6l1.5 2H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><circle cx="12" cy="12.5" r="3.5"/></svg>',
+  mensajes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>',
+  alta:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.6 7.1 18.2 8 12.7 4 8.8l5.5-.8z"/></svg>',
+  subir:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>',
+  vacio:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M9 15h6"/></svg>'
+};
+var PREGUNTAS_BASE = [
+  {id:'que_hacen', texto:'¿Qué hacen y qué los diferencia?', ayuda:'En 2 o 3 líneas.'},
+  {id:'productos', texto:'¿Cuáles son sus productos o servicios principales?'},
+  {id:'publico', texto:'¿A quién le quieren llegar?', ayuda:'Tipo de cliente, zona.'},
+  {id:'objetivo', texto:'¿Qué quieren lograr con Instagram?', ayuda:'Consultas, ventas, turnos, que los conozcan…'},
+  {id:'tono', texto:'¿Cómo le hablan a sus clientes?', ayuda:'De vos o de usted, formal o cercano, con o sin emojis.'},
+  {id:'nunca', texto:'¿Hay algo que NUNCA quieran que se publique?', ayuda:'Precios, ciertos temas, palabras.'},
+  {id:'referencias', texto:'Cuentas de Instagram que les gusten', ayuda:'De cualquier rubro.'},
+  {id:'colores', texto:'Colores de la marca', ayuda:'Si no los saben, los sacamos del logo.'},
+  {id:'contacto', texto:'Contacto que se puede publicar', ayuda:'WhatsApp o teléfonos (con nombre), dirección, link de Google Maps, horario, web.'},
+  {id:'equipo', texto:'¿Quién nos pasa la info cada semana y quién aprueba?'},
+  {id:'ritmo', texto:'¿Cuántas publicaciones por semana y qué días/horarios?', ayuda:'Sugerencia: 2 posts, 1 reel y 3 historias.'},
+  {id:'publicacion', texto:'¿Se publica solo después de aprobar, o prefieren recibir las piezas y programarlas ustedes?'}
+];
+
+var S = {clave:'', datos:null, tab:'semana', demo:false, subiendo:{}};
+function $(id){return document.getElementById(id)}
+function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function toast(t){var e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(function(){e.classList.remove('on')},2600)}
+function fecha(iso){try{return new Date(iso).toLocaleString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}catch(e){return ''}}
+function guardarLocal(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function leerLocal(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}
+
+// ---------- API ----------
+function get(params){
+  if(S.demo) return Promise.resolve(DEMO.get(params));
+  var q=Object.keys(params).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(params[k])}).join('&');
+  return fetch(API+'?clave='+encodeURIComponent(S.clave)+'&'+q).then(function(r){return r.json()});
+}
+function post(obj){
+  if(S.demo) return Promise.resolve(DEMO.post(obj));
+  obj.clave=S.clave;
+  return fetch(API,{method:'POST',body:JSON.stringify(obj)}).then(function(r){return r.json()});
+}
+
+// ---------- arranque ----------
+function init(){
+  var p=new URLSearchParams(location.search);
+  S.demo=p.get('demo')==='1';
+  S.clave=p.get('c')||leerLocal('cm_clave');
+  if(p.get('c')) guardarLocal('cm_clave',p.get('c'));
+  if(!S.clave && !S.demo){ $('main').innerHTML='<div class="empty">'+ICON.vacio+'<h1>Hola 👋</h1><p class="sub" style="margin-top:6px">Para entrar, abrí el link personal que te mandamos por mail.</p></div>'; return; }
+  cargar();
+}
+function cargar(){
+  return get({accion:'ver'}).then(function(d){
+    if(d.error){ $('main').innerHTML='<div class="empty">'+ICON.vacio+'<h1>No pudimos abrir tu portal</h1><p class="sub" style="margin-top:6px">Revisá que el link sea el último que te mandamos.</p></div>'; return; }
+    S.datos=d;
+    if(d.cliente.fase==='alta' && !d.alta.enviado && !S._tabElegida) S.tab='alta';
+    document.title='Tu CM · '+d.cliente.nombre;
+    dibujar();
+  }).catch(function(){ $('main').innerHTML='<div class="empty">'+ICON.vacio+'<h1>Sin conexión</h1><p class="sub" style="margin-top:6px">Revisá tu internet y volvé a intentar.</p><div class="row" style="justify-content:center"><button class="btn pri" style="flex:0 0 auto" onclick="cargar()">Reintentar</button></div></div>'; });
+}
+function tabs(){
+  var d=S.datos, t=[];
+  if(d.cliente.fase==='alta') t.push({id:'alta',txt:'Bienvenida'});
+  t.push({id:'semana',txt:'Tu semana'});
+  t.push({id:'material',txt:'Mandar material'});
+  t.push({id:'mensajes',txt:'Mensajes'});
+  return t;
+}
+function pendientes(){var s=S.datos.semana;return s?s.piezas.filter(function(p){return p.estado==='para-revisar'}).length:0}
+function dibujar(){
+  var html='', side='<div class="logo">Tu CM</div>', pen=pendientes();
+  tabs().forEach(function(t){
+    var dot=(t.id==='semana'&&pen)?'<span class="dot" aria-label="'+pen+' para revisar"></span>':'';
+    var b='<button class="tab'+(S.tab===t.id?' on':'')+'" onclick="ir(\''+t.id+'\')" aria-current="'+(S.tab===t.id)+'">'+ICON[t.id]+'<span>'+t.txt+'</span>'+dot+'</button>';
+    html+=b; side+=b;
+  });
+  $('bottom').innerHTML=html; $('side').innerHTML=side;
+  ({semana:vSemana,material:vMaterial,mensajes:vMensajes,alta:vAlta})[S.tab]();
+  window.scrollTo(0,0);
+}
+function ir(t){S.tab=t;S._tabElegida=true;dibujar()}
+function cabecera(titulo,sub){return '<header class="top"><div><div class="hi">'+esc(S.datos.cliente.nombre)+'</div><h1>'+titulo+'</h1>'+(sub?'<p class="sub">'+sub+'</p>':'')+'</div></header>'}
+
+// ---------- Tu semana ----------
+var ESTADO={'para-revisar':['b-rev','Para revisar'],'aprobado':['b-ok','Aprobado ✓'],'cambio-pedido':['b-cam','Cambio pedido']};
+function vSemana(){
+  var s=S.datos.semana;
+  if(!s||!s.piezas||!s.piezas.length){ $('main').innerHTML=cabecera('Tu semana')+'<div class="empty">'+ICON.vacio+'<p>Todavía no hay publicaciones para revisar.<br>Cuando estén listas te avisamos por mail.</p></div>'; return; }
+  var pen=pendientes(), apr=s.piezas.filter(function(p){return p.estado==='aprobado'}).length;
+  var h=cabecera(esc(s.titulo||'Tu semana'), pen?pen+' para revisar · '+apr+' de '+s.piezas.length+' aprobadas':'¡Todo revisado! '+apr+' de '+s.piezas.length+' aprobadas');
+  h+='<div class="grid">';
+  s.piezas.forEach(function(p,i){
+    var e=ESTADO[p.estado]||ESTADO['para-revisar'], n=(p.archivos||[]).length, hist=p.tipo==='historia'||p.tipo==='reel';
+    h+='<article class="card" id="p_'+esc(p.id)+'">'
+      +'<div class="prev'+(hist?' hist':'')+'" id="img_'+i+'" data-i="0">'+(n?'Cargando vista previa…':'Sin vista previa')+(n>1?'<span class="multi">1/'+n+'</span>':'')+'</div>'
+      +'<div class="body"><div class="meta"><span>'+esc(cap1(p.tipo))+' · '+esc(p.dia||'')+(p.hora?' · '+esc(p.hora)+' hs':'')+'</span><span class="badge '+e[0]+'">'+e[1]+'</span></div>'
+      +'<div class="tit">'+esc(p.titulo||'')+'</div>'
+      +(p.texto?'<div class="cap" id="cap_'+i+'">'+esc(p.texto)+'</div><button class="more" onclick="verMas('+i+',this)">Ver texto completo</button>':'')
+      +(p.stickers?'<div class="stk">📌 Al publicar: '+esc(p.stickers)+'</div>':'')
+      +(p.comentario&&p.estado==='cambio-pedido'?'<div class="stk">Tu pedido: «'+esc(p.comentario)+'»</div>':'')
+      +(p.estado==='para-revisar'?'<div class="row"><button class="btn okb" onclick="aprobar(\''+esc(p.id)+'\',this)">Aprobar</button><button class="btn" onclick="abrirCambio('+i+')">Pedir cambio</button></div>'
+        +'<div class="coment" id="cm_'+i+'"><textarea id="ct_'+i+'" placeholder="¿Qué te gustaría cambiar?"></textarea><div class="err" id="ce_'+i+'"></div><div class="row"><button class="btn pri" onclick="pedirCambio(\''+esc(p.id)+'\','+i+',this)">Enviar pedido</button></div></div>':'')
+      +'</div></article>';
+  });
+  $('main').innerHTML=h+'</div>';
+  s.piezas.forEach(function(p,i){ if((p.archivos||[]).length) cargarImg(i,0); });
+}
+function cap1(t){t=t||'';return t.charAt(0).toUpperCase()+t.slice(1)}
+function verMas(i,b){var c=$('cap_'+i);c.classList.toggle('open');b.textContent=c.classList.contains('open')?'Ver menos':'Ver texto completo'}
+var CACHE={};
+function cargarImg(i,k){
+  var p=S.datos.semana.piezas[i], id=p.archivos[k], box=$('img_'+i); if(!box) return;
+  var pintar=function(r){
+    var n=p.archivos.length, nav='';
+    if(n>1){ nav='<span class="multi">'+(k+1)+'/'+n+'</span>';
+      if(k>0) nav+='<button class="nav-img" style="left:10px" aria-label="Anterior" onclick="cargarImg('+i+','+(k-1)+')">‹</button>';
+      if(k<n-1) nav+='<button class="nav-img" style="right:10px" aria-label="Siguiente" onclick="cargarImg('+i+','+(k+1)+')">›</button>'; }
+    box.innerHTML=(r&&r.base64?'<img alt="'+esc(p.titulo)+' ('+(k+1)+')" src="data:'+r.tipo+';base64,'+r.base64+'">':(r&&/^video/.test(r.tipo)?'🎬 Video: lo ves en el link del mail':'Sin vista previa'))+nav;
+  };
+  if(CACHE[id]) return pintar(CACHE[id]);
+  get({accion:'imagen',id:id}).then(function(r){CACHE[id]=r;pintar(r)}).catch(function(){box.textContent='No se pudo cargar la vista previa'});
+}
+function aprobar(id,b){b.disabled=true;post({accion:'aprobar',pieza:id}).then(function(r){ if(r.ok){toast('¡Aprobado! Gracias');marcar(id,'aprobado','')} else {b.disabled=false;toast('No se pudo guardar, probá de nuevo')} })}
+function abrirCambio(i){$('cm_'+i).classList.add('on');$('ct_'+i).focus()}
+function pedirCambio(id,i,b){
+  var t=$('ct_'+i).value.trim(); if(!t){$('ce_'+i).textContent='Contanos qué te gustaría cambiar.';return}
+  $('ce_'+i).textContent=''; b.disabled=true;
+  post({accion:'cambio',pieza:id,comentario:t}).then(function(r){ if(r.ok){toast('Listo, te mandamos la versión nueva');marcar(id,'cambio-pedido',t)} else {b.disabled=false;toast('No se pudo enviar')} });
+}
+function marcar(id,estado,com){S.datos.semana.piezas.forEach(function(p){if(p.id===id){p.estado=estado;p.comentario=com}});dibujar()}
+
+// ---------- Mandar material ----------
+function vMaterial(){
+  var h=cabecera('Mandar material','Fotos, videos y novedades para las próximas publicaciones.');
+  h+='<h2>¿Qué pasó esta semana?</h2><textarea id="nota" rows="4" placeholder="Un trabajo que salió bien, algo que llegó, una promo, una pregunta que les hacen seguido…">'+esc(leerLocal('cm_nota'))+'</textarea>'
+    +'<div class="err" id="notaErr"></div><div class="row"><button class="btn pri" onclick="mandarNota(this)">Enviar novedades</button></div>'
+    +'<h2>Fotos y videos</h2><label class="drop" for="arch">'+ICON.subir+'<div style="margin-top:6px;font-weight:600;color:var(--tx)">Tocá para elegir fotos o videos</div><div style="font-size:13px">Desde la galería o la compu · videos de hasta '+MAX_MB+' MB</div></label>'
+    +'<input type="file" id="arch" class="sr" accept="image/*,video/*" multiple onchange="subirArchivos(this.files,\'\')">'
+    +'<div class="list" id="subidas"></div>';
+  var mat=(S.datos.material||[]).slice().reverse().slice(0,12);
+  if(mat.length) h+='<h2>Lo último que mandaste</h2><div class="list">'+mat.map(function(m){return '<div class="item"><span>📎</span><span class="n">'+esc(m.nombre)+'</span><span class="sub">'+fecha(m.fecha)+'</span></div>'}).join('')+'</div>';
+  $('main').innerHTML=h;
+  $('nota').addEventListener('input',function(){guardarLocal('cm_nota',this.value)});
+}
+function mandarNota(b){
+  var t=$('nota').value.trim(); if(!t){$('notaErr').textContent='Escribí algo antes de enviar.';return}
+  b.disabled=true; post({accion:'nota',texto:t}).then(function(r){ b.disabled=false; if(r.ok){guardarLocal('cm_nota','');$('nota').value='';toast('¡Gracias! Lo usamos para la semana')} else toast('No se pudo enviar') });
+}
+function subirArchivos(files,para,listaId){
+  var lista=$(listaId||'subidas'); Array.prototype.forEach.call(files,function(f,ix){
+    var id='u'+Date.now()+ix, mb=f.size/1048576;
+    lista.insertAdjacentHTML('beforeend','<div class="item" id="'+id+'"><span>'+(/^video/.test(f.type)?'🎬':'🖼️')+'</span><span class="n">'+esc(f.name)+'</span><span class="bar"><i></i></span></div>');
+    if(mb>MAX_MB){ $(id).querySelector('.bar').outerHTML='<span class="err">Muy pesado ('+mb.toFixed(0)+' MB)</span>'; return; }
+    var rd=new FileReader(); rd.onload=function(){
+      $(id).querySelector('i').style.width='45%';
+      post({accion:'subir',nombre:f.name,tipo:f.type||'application/octet-stream',para:para,base64:String(rd.result).split(',')[1]}).then(function(r){
+        var el=$(id); if(!el) return;
+        if(r.ok){ el.querySelector('.bar').outerHTML='<span class="badge b-ok">Subido ✓</span>'; (S.datos.material=S.datos.material||[]).push({nombre:f.name,fecha:new Date().toISOString()}); }
+        else el.querySelector('.bar').outerHTML='<span class="err">No se pudo subir</span>';
+      }).catch(function(){ var el=$(id); if(el) el.querySelector('.bar').outerHTML='<span class="err">Error de conexión</span>'; });
+    }; rd.readAsDataURL(f);
+  });
+}
+
+// ---------- Mensajes ----------
+function vMensajes(){
+  var ms=S.datos.mensajes||[];
+  var h=cabecera('Mensajes','Escribinos lo que necesites. Te respondemos en el día.')+'<div class="chat" id="chat">';
+  if(!ms.length) h+='<div class="msg cm">¡Hola! Por acá podés escribirnos lo que quieras: ideas, dudas o cambios.</div>';
+  ms.forEach(function(m){h+='<div class="msg '+(m.de==='cliente'?'cliente':'cm')+'">'+esc(m.texto)+'<small>'+fecha(m.fecha)+'</small></div>'});
+  h+='</div><div class="send"><textarea id="txt" rows="1" placeholder="Escribí un mensaje…" aria-label="Mensaje"></textarea><button class="btn pri" onclick="mandarMsg(this)">Enviar</button></div>';
+  $('main').innerHTML=h; window.scrollTo(0,document.body.scrollHeight);
+}
+function mandarMsg(b){
+  var t=$('txt').value.trim(); if(!t) {$('txt').focus();return}
+  b.disabled=true; post({accion:'mensaje',texto:t}).then(function(r){ b.disabled=false; if(r.ok){S.datos.mensajes.push({de:'cliente',texto:t,fecha:new Date().toISOString()});vMensajes()} else toast('No se pudo enviar') });
+}
+
+// ---------- Bienvenida (alta) ----------
+function vAlta(){
+  var a=S.datos.alta||{}, qs=(a.preguntas&&a.preguntas.length)?a.preguntas:PREGUNTAS_BASE, r=a.respuestas||{};
+  if(a.enviado){ $('main').innerHTML=cabecera('¡Gracias!')+'<div class="empty">'+ICON.alta+'<p>Recibimos tus respuestas. Estamos preparando una muestra de cómo se vería tu Instagram y te avisamos por mail.</p><div class="row" style="justify-content:center"><button class="btn" style="flex:0 0 auto" onclick="editarAlta()">Revisar mis respuestas</button></div></div>'; return; }
+  var hechas=qs.filter(function(q){return (r[q.id]||'').trim()}).length;
+  var h=cabecera('¡Bienvenidos! 👋','Contanos sobre tu negocio para arrancar. Se guarda solo: podés completarlo de a poco.');
+  h+='<div class="steps">'+qs.map(function(q){return '<i class="'+((r[q.id]||'').trim()?'on':'')+'"></i>'}).join('')+'</div>';
+  qs.forEach(function(q){h+='<div class="q"><label for="q_'+q.id+'">'+esc(q.texto)+'</label>'+(q.ayuda?'<small>'+esc(q.ayuda)+'</small>':'')+'<textarea id="q_'+q.id+'" data-q="'+q.id+'" rows="2" onblur="guardarResp(this)">'+esc(r[q.id]||'')+'</textarea></div>'});
+  h+='<h2>Tu logo</h2><label class="drop" for="logo">'+ICON.subir+'<div style="margin-top:6px;font-weight:600;color:var(--tx)">Subir logo</div><div style="font-size:13px">Ideal PNG sin fondo, en la mejor calidad que tengas</div></label><input type="file" id="logo" class="sr" accept="image/*" onchange="subirArchivos(this.files,\'logo\',\'lAlta\')">'
+    +'<h2>Fotos y videos</h2><label class="drop" for="fts">'+ICON.material+'<div style="margin-top:6px;font-weight:600;color:var(--tx)">Subir 10 a 20 fotos reales</div><div style="font-size:13px">El lugar, productos, equipo, trabajos · y 2 o 3 videos cortos si quieren reels</div></label><input type="file" id="fts" class="sr" accept="image/*,video/*" multiple onchange="subirArchivos(this.files,\'alta\',\'lAlta\')">'
+    +'<div class="list" id="lAlta"></div>'
+    +'<div class="err" id="altaErr"></div><div class="row" style="margin-top:22px"><button class="btn pri" onclick="enviarAlta(this)">Enviar respuestas ('+hechas+'/'+qs.length+')</button></div>';
+  $('main').innerHTML=h;
+}
+function editarAlta(){S.datos.alta.enviado=false;vAlta()}
+function guardarResp(el){
+  var v=el.value, k=el.getAttribute('data-q'), a=S.datos.alta; a.respuestas=a.respuestas||{};
+  if((a.respuestas[k]||'')===v) return; a.respuestas[k]=v; var o={}; o[k]=v;
+  post({accion:'alta_guardar',respuestas:o}).then(function(r){ if(r.ok) toast('Guardado'); });
+}
+function enviarAlta(b){
+  var a=S.datos.alta, qs=(a.preguntas&&a.preguntas.length)?a.preguntas:PREGUNTAS_BASE, todo={};
+  qs.forEach(function(q){var el=$('q_'+q.id); if(el) todo[q.id]=el.value});
+  var falta=qs.filter(function(q){return !(todo[q.id]||'').trim()}).length;
+  if(falta>Math.floor(qs.length/2)){ $('altaErr').textContent='Respondé al menos la mitad de las preguntas (te faltan '+falta+'). Lo demás lo vemos después.'; return; }
+  b.disabled=true; post({accion:'alta_enviar',respuestas:todo}).then(function(r){ if(r.ok){a.respuestas=todo;a.enviado=true;toast('¡Gracias!');vAlta()} else {b.disabled=false;toast('No se pudo enviar')} });
+}
+
+// ---------- modo demo (?demo=1): datos de ejemplo, no guarda nada ----------
+var DEMO={
+  datos:{cliente:{nombre:'Panadería La Espiga',fase:'activo'},alta:{preguntas:[],respuestas:{},enviado:false},material:[{nombre:'pan-de-campo.jpg',fecha:new Date().toISOString()}],
+    mensajes:[{de:'cm',texto:'¡Hola! Ya está lista tu semana para revisar 🙂',fecha:new Date().toISOString()}],
+    semana:{lunes:'2026-10-19',titulo:'Semana del 19 al 25 de octubre',piezas:[
+      {id:'p1',tipo:'post',dia:'Lunes 19/10',hora:'19:00',titulo:'Volvió el pan de campo',texto:'Todos los viernes, recién salido del horno. 🍞\nReservá el tuyo por WhatsApp.\n\n#panaderia #pandecampo',archivos:['a'],estado:'para-revisar'},
+      {id:'p2',tipo:'carrusel',dia:'Miércoles 21/10',hora:'19:00',titulo:'3 tips para conservar el pan',texto:'Guardalo en una panera, nunca en la heladera…',archivos:['b','c','d'],estado:'aprobado'},
+      {id:'p3',tipo:'historia',dia:'Viernes 23/10',hora:'12:30',titulo:'¿Qué pan preferís?',archivos:['e'],stickers:'sumá una encuesta: "Campo / Masa madre"',estado:'para-revisar'}]}},
+  get:function(p){ if(p.accion==='imagen') return {tipo:'image/svg+xml',base64:btoa(unescape(encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500"><rect width="400" height="500" fill="#E9DCC8"/><text x="200" y="260" font-family="Georgia" font-size="34" text-anchor="middle" fill="#5A3E2B">Pieza '+p.id+'</text></svg>')))}; return JSON.parse(JSON.stringify(this.datos)) },
+  post:function(){ return {ok:true} }
+};
+init();
+if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js') }catch(e){} }
+</script>
+</body>
+</html>
