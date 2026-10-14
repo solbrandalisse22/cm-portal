@@ -81,6 +81,12 @@ textarea:focus,input:focus{outline:2px solid var(--acc);outline-offset:1px}
 .send .btn{flex:0 0 auto}
 .resp{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin-bottom:10px}.rq{font-size:13px;color:var(--tx2);margin-bottom:4px}.ra{white-space:pre-wrap}.ra.vacia{color:var(--tx3);font-style:italic}
 .mini{font-size:14px;font-weight:600;color:var(--tx2);margin:18px 0 8px}.nota{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px;margin-bottom:8px}.nt{white-space:pre-wrap}.nf{font-size:12px;color:var(--tx3);margin-top:4px}.ok-t{color:var(--ok)}
+.chips{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}.chip{padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--tx2);font-size:14px;font-weight:500}.chip.on{background:var(--acc);border-color:var(--acc);color:var(--on-acc)}
+.cap{text-transform:capitalize}.b-no{background:var(--line);color:var(--tx2)}
+.ag{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:8px;overflow:hidden}
+.ag details>summary{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;list-style:none}.ag summary::-webkit-details-marker{display:none}
+.ag .ti{font-size:22px}.ag .tx{flex:1;min-width:0;display:flex;flex-direction:column}.ag .tx b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ag .tx small{color:var(--tx3);font-size:13px}
+.ag-body{padding:0 14px 14px}.pub{display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--line);font-size:14px;color:var(--tx2)}.pub span{flex:1}.pub .btn{flex:0 0 auto;padding:6px 16px}.ag-img img{width:100%;max-width:360px;border-radius:10px;display:block;margin-bottom:10px}.ag-img{color:var(--tx3);font-size:13px}
 .q{margin-bottom:16px}.q label{display:block;font-weight:500;margin-bottom:6px}.q small{color:var(--tx3)}
 .steps{display:flex;gap:6px;margin:10px 0 18px}.steps i{flex:1;height:5px;border-radius:5px;background:var(--line)}.steps i.on{background:var(--acc)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:92px;background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
@@ -123,6 +129,7 @@ var ICON = {
   semana:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>',
   material:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8a2 2 0 0 1 2-2h1.5l1.5-2h6l1.5 2H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><circle cx="12" cy="12.5" r="3.5"/></svg>',
   mensajes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>',
+  agenda:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.2"/><circle cx="4.5" cy="12" r="1.2"/><circle cx="4.5" cy="18" r="1.2"/></svg>',
   datos:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>',
   alta:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.6 7.1 18.2 8 12.7 4 8.8l5.5-.8z"/></svg>',
   subir:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>',
@@ -187,6 +194,7 @@ function tabs(){
   var d=S.datos, t=[];
   if(d.cliente.fase==='alta') t.push({id:'alta',txt:'Bienvenida'});
   t.push({id:'semana',txt:'Tu semana'});
+  if(d.cliente.fase!=='alta') t.push({id:'agenda',txt:'Agenda'});
   t.push({id:'material',txt:'Mandar material'});
   t.push({id:'mensajes',txt:'Mensajes'});
   if(d.cliente.fase!=='alta') t.push({id:'datos',txt:'Mis datos'});
@@ -198,7 +206,7 @@ function marcarLeidos(){var ms=S.datos.mensajes||[],u='';ms.forEach(function(m){
 function pendientes(){var s=S.datos.semana;return s?s.piezas.filter(function(p){return p.estado==='para-revisar'}).length:0}
 function dibujar(){
   dibujarNav();
-  ({semana:vSemana,material:vMaterial,mensajes:vMensajes,alta:vAlta,datos:vAlta})[S.tab]();
+  ({semana:vSemana,agenda:vAgenda,material:vMaterial,mensajes:vMensajes,alta:vAlta,datos:vAlta})[S.tab]();
   window.scrollTo(0,0);
 }
 function dibujarNav(){
@@ -253,6 +261,58 @@ function vSemana(){
 function cap1(t){t=t||'';return t.charAt(0).toUpperCase()+t.slice(1)}
 function verMas(i,b){var c=$('cap_'+i);c.classList.toggle('open');b.textContent=c.classList.contains('open')?'Ver menos':'Ver texto completo'}
 var CACHE={};
+// ---------- Agenda: todas las publicaciones (próximas y las que ya salieron) ----------
+var MESES={ene:0,feb:1,mar:2,abr:3,may:4,jun:5,jul:6,ago:7,sep:8,oct:9,nov:10,dic:11};
+function cuandoDe(p,sem){
+  if(p.cuando){var t=new Date(p.cuando);if(!isNaN(t))return t}
+  var m=String(p.dia||'').match(/(\d{1,2})\/(\d{1,2})/), y=parseInt(String(sem.lunes||'').slice(0,4))||new Date().getFullYear();
+  if(!m) return null;
+  var h=String(p.hora||'12:00').split(':');
+  return new Date(y,parseInt(m[2])-1,parseInt(m[1]),parseInt(h[0])||12,parseInt(h[1])||0);
+}
+function piezasAgenda(){
+  var l=[], sems=(S.datos.historial_semanas||[]).concat(S.datos.semana?[S.datos.semana]:[]);
+  sems.forEach(function(sem){ if(sem.lunes==='muestra') return;
+    (sem.piezas||[]).forEach(function(p){ l.push({p:p,t:cuandoDe(p,sem),sem:sem}) }) });
+  return l;
+}
+var TIPO={post:['🖼️','Post'],carrusel:['🗂️','Carrusel'],reel:['🎬','Reel'],historia:['📱','Historia']};
+function vAgenda(){
+  var ahora=new Date(), todas=piezasAgenda(), ver=S.agendaVer||'proximas';
+  var prox=todas.filter(function(x){return !x.t||x.t>=ahora}).sort(function(a,b){return (a.t||0)-(b.t||0)});
+  var pas=todas.filter(function(x){return x.t&&x.t<ahora}).sort(function(a,b){return b.t-a.t});
+  var lista=ver==='proximas'?prox:pas;
+  var h=cabecera('Agenda','Todo lo que se va a publicar y lo que ya salió.')
+    +'<div class="chips"><button class="chip'+(ver==='proximas'?' on':'')+'" onclick="S.agendaVer=\'proximas\';vAgenda()">Próximas ('+prox.length+')</button><button class="chip'+(ver==='pasadas'?' on':'')+'" onclick="S.agendaVer=\'pasadas\';vAgenda()">Ya publicadas ('+pas.length+')</button></div>';
+  if(!lista.length) h+='<div class="empty">'+ICON.agenda+'<p>'+(ver==='proximas'?'Todavía no hay publicaciones programadas. Cuando armemos tu semana, aparecen acá.':'Todavía no salió ninguna publicación.')+'</p></div>';
+  var dia='';
+  lista.forEach(function(x,i){
+    var p=x.p, tp=TIPO[p.tipo]||['📌','Publicación'], d=x.t?x.t.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'}):'Sin fecha';
+    if(d!==dia){dia=d;h+='<h3 class="mini">'+esc(d.charAt(0).toUpperCase()+d.slice(1))+'</h3>'}
+    var manual=(x.sem.publicacion||(x.sem.avisos?'manual':''))!=='metricool', preguntar=false, est;
+    if(ver==='proximas') est=ESTADO[p.estado]||['b-rev','Para revisar'];
+    else if(p.estado!=='aprobado') est=['b-no','No se aprobó'];
+    else if(p.publicado===true) est=['b-ok','✓ Publicada'];
+    else if(p.publicado===false) est=['b-no','No se publicó'];
+    else if(manual){ est=['b-rev','Falta confirmar']; preguntar=true; }
+    else est=['b-no','Sin confirmar'];
+    h+='<div class="ag"><details ontoggle="if(this.open)verAgenda('+i+')"><summary><span class="ti">'+tp[0]+'</span><span class="tx"><b>'+esc(p.titulo||tp[1])+'</b><small>'+tp[1]+(x.t?' · '+x.t.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false})+' hs':'')+'</small></span><span class="badge '+est[0]+'">'+est[1]+'</span></summary>'
+      +'<div class="ag-body"><div class="ag-img" id="ag_'+i+'"></div>'+(p.texto?'<div class="nt">'+esc(p.texto)+'</div>':'')+(p.link?'<a class="more" href="'+esc(p.link)+'" target="_blank" rel="noopener">Ver en Instagram</a>':'')+'</div></details>'
+      +(preguntar?'<div class="pub"><span>¿La publicaste?</span><button class="btn okb" onclick="marcarPublicada('+i+',true,this)">Sí</button><button class="btn" onclick="marcarPublicada('+i+',false,this)">No</button></div>':'')+'</div>';
+  });
+  $('main').innerHTML=h; S._agenda=lista;
+}
+function marcarPublicada(i,v,b){
+  var x=S._agenda[i]; b.disabled=true;
+  post({accion:'publicada',pieza:x.p.id,semana:x.sem.lunes,valor:v}).then(function(r){ if(r.ok){x.p.publicado=v;toast(v?'¡Genial! Quedó como publicada':'Anotado');vAgenda()} else {b.disabled=false;toast('No se pudo guardar')} });
+}
+function verAgenda(i){
+  var x=S._agenda[i], id=(x.p.archivos||[])[0], box=$('ag_'+i); if(!box||!id||box.innerHTML) return;
+  box.textContent='Cargando…';
+  var pintar=function(r){box.innerHTML=r&&r.base64?'<img alt="" src="data:'+r.tipo+';base64,'+r.base64+'">':(r&&/^video/.test(r.tipo)?'🎬 Video':'Sin vista previa')};
+  if(CACHE[id]) return pintar(CACHE[id]);
+  get({accion:'imagen',id:id}).then(function(r){CACHE[id]=r;pintar(r)}).catch(function(){box.textContent='No se pudo cargar'});
+}
 function cargarImg(i,k){
   var p=S.datos.semana.piezas[i], id=p.archivos[k], box=$('img_'+i); if(!box) return;
   var pintar=function(r){
