@@ -80,6 +80,7 @@ textarea:focus,input:focus{outline:2px solid var(--acc);outline-offset:1px}
 .send textarea{min-height:48px}
 .send .btn{flex:0 0 auto}
 .resp{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin-bottom:10px}.rq{font-size:13px;color:var(--tx2);margin-bottom:4px}.ra{white-space:pre-wrap}.ra.vacia{color:var(--tx3);font-style:italic}
+.mini{font-size:14px;font-weight:600;color:var(--tx2);margin:18px 0 8px}.nota{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px;margin-bottom:8px}.nt{white-space:pre-wrap}.nf{font-size:12px;color:var(--tx3);margin-top:4px}.ok-t{color:var(--ok)}
 .q{margin-bottom:16px}.q label{display:block;font-weight:500;margin-bottom:6px}.q small{color:var(--tx3)}
 .steps{display:flex;gap:6px;margin:10px 0 18px}.steps i{flex:1;height:5px;border-radius:5px;background:var(--line)}.steps i.on{background:var(--acc)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:92px;background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
@@ -278,6 +279,7 @@ function vMaterial(){
   var h=cabecera('Mandar material','Fotos, videos y novedades para las próximas publicaciones.');
   h+='<h2>¿Qué pasó esta semana?</h2><textarea id="nota" rows="4" placeholder="Un trabajo que salió bien, algo que llegó, una promo, una pregunta que les hacen seguido…">'+esc(leerLocal('cm_nota'))+'</textarea>'
     +'<div class="err" id="notaErr"></div><div class="row"><button class="btn pri" onclick="mandarNota(this)">Enviar novedades</button></div>'
+    +notasEnviadas()
     +'<h2>Fotos y videos</h2><label class="drop" for="arch">'+ICON.subir+'<div style="margin-top:6px;font-weight:600;color:var(--tx)">Tocá para elegir fotos o videos</div><div style="font-size:13px">Desde la galería o la compu · videos de hasta '+MAX_MB+' MB</div></label>'
     +'<input type="file" id="arch" class="sr" accept="image/*,video/*" multiple onchange="subirArchivos(this.files,\'\')">'
     +'<div class="list" id="subidas"></div>';
@@ -286,9 +288,14 @@ function vMaterial(){
   $('main').innerHTML=h;
   $('nota').addEventListener('input',function(){guardarLocal('cm_nota',this.value)});
 }
+function notasEnviadas(){
+  var ns=(S.datos.notas||[]).slice().reverse().slice(0,5); if(!ns.length) return '';
+  return '<h3 class="mini">Novedades que mandaste</h3>'+ns.map(function(n){
+    return '<div class="nota"><div class="nt">'+esc(n.texto)+'</div><div class="nf">'+fecha(n.fecha)+' · <span class="ok-t">✓ Recibida</span></div></div>'}).join('');
+}
 function mandarNota(b){
   var t=$('nota').value.trim(); if(!t){$('notaErr').textContent='Escribí algo antes de enviar.';return}
-  b.disabled=true; post({accion:'nota',texto:t}).then(function(r){ b.disabled=false; if(r.ok){guardarLocal('cm_nota','');$('nota').value='';toast('¡Gracias! Lo usamos para la semana')} else toast('No se pudo enviar') });
+  b.disabled=true; post({accion:'nota',texto:t}).then(function(r){ b.disabled=false; if(r.ok){guardarLocal('cm_nota','');$('nota').value='';toast('¡Gracias! Lo usamos para la semana');(S.datos.notas=S.datos.notas||[]).push({texto:t,fecha:new Date().toISOString(),procesado:false});vMaterial()} else toast('No se pudo enviar') });
 }
 function subirArchivos(files,para,listaId){
   var lista=$(listaId||'subidas'); Array.prototype.forEach.call(files,function(f,ix){
