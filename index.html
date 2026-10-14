@@ -183,17 +183,36 @@ function tabs(){
   t.push({id:'mensajes',txt:'Mensajes'});
   return t;
 }
+function claveVisto(){return 'cm_visto_'+(S.demo?'demo':S.clave)}
+function noLeidos(){var v=leerLocal(claveVisto());return (S.datos.mensajes||[]).filter(function(m){return m.de!=='cliente'&&(!v||m.fecha>v)}).length}
+function marcarLeidos(){var ms=S.datos.mensajes||[],u='';ms.forEach(function(m){if(m.fecha>u)u=m.fecha});if(u)guardarLocal(claveVisto(),u)}
 function pendientes(){var s=S.datos.semana;return s?s.piezas.filter(function(p){return p.estado==='para-revisar'}).length:0}
 function dibujar(){
-  var html='', side='<div class="logo">Tu CM</div>', pen=pendientes();
+  dibujarNav();
+  ({semana:vSemana,material:vMaterial,mensajes:vMensajes,alta:vAlta})[S.tab]();
+  window.scrollTo(0,0);
+}
+function dibujarNav(){
+  if(S.tab==='mensajes') marcarLeidos();
+  var html='', side='<div class="logo">Tu CM</div>', pen=pendientes(), nl=noLeidos();
+  try{ if(navigator.setAppBadge){ (pen+nl)?navigator.setAppBadge(pen+nl):navigator.clearAppBadge() } }catch(e){}
   tabs().forEach(function(t){
-    var dot=(t.id==='semana'&&pen)?'<span class="dot" aria-label="'+pen+' para revisar"></span>':'';
+    var dot=(t.id==='semana'&&pen)?'<span class="dot" aria-label="'+pen+' para revisar"></span>':
+            (t.id==='mensajes'&&nl)?'<span class="dot" aria-label="'+nl+(nl>1?' mensajes nuevos':' mensaje nuevo')+'"></span>':'';
     var b='<button class="tab'+(S.tab===t.id?' on':'')+'" onclick="ir(\''+t.id+'\')" aria-current="'+(S.tab===t.id)+'">'+ICON[t.id]+'<span>'+t.txt+'</span>'+dot+'</button>';
     html+=b; side+=b;
   });
   $('bottom').innerHTML=html; $('side').innerHTML=side;
-  ({semana:vSemana,material:vMaterial,mensajes:vMensajes,alta:vAlta})[S.tab]();
-  window.scrollTo(0,0);
+}
+// Revisa novedades sin redibujar la pantalla (no pierde lo que el cliente está escribiendo)
+function refrescar(){
+  if(document.hidden || !S.datos || S.demo) return;
+  get({accion:'ver'}).then(function(d){
+    if(!d || d.error) return;
+    var antes=(S.datos.mensajes||[]).length; S.datos=d;
+    if(S.tab==='mensajes' && (d.mensajes||[]).length!==antes && !$('txt').value) vMensajes();
+    dibujarNav();
+  }).catch(function(){});
 }
 function ir(t){S.tab=t;S._tabElegida=true;dibujar()}
 function cabecera(titulo,sub){return '<header class="top"><div><div class="hi">'+esc(S.datos.cliente.nombre)+'</div><h1>'+titulo+'</h1>'+(sub?'<p class="sub">'+sub+'</p>':'')+'</div></header>'}
@@ -333,6 +352,8 @@ var DEMO={
   post:function(){ return {ok:true} }
 };
 init();
+document.addEventListener('visibilitychange',refrescar);
+setInterval(refrescar, 60000);
 if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js') }catch(e){} }
 </script>
 </body>
