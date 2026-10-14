@@ -149,7 +149,7 @@ function leerLocal(k){try{return localStorage.getItem(k)||''}catch(e){return ''}
 function get(params){
   if(S.demo) return Promise.resolve(DEMO.get(params));
   var q=Object.keys(params).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(params[k])}).join('&');
-  return fetch(API+'?clave='+encodeURIComponent(S.clave)+'&'+q).then(function(r){return r.json()});
+  return fetch(API+'?clave='+encodeURIComponent(S.clave)+'&'+q+'&_='+Date.now(),{cache:'no-store'}).then(function(r){return r.json()});
 }
 function post(obj){
   if(S.demo) return Promise.resolve(DEMO.post(obj));
@@ -353,7 +353,8 @@ var DEMO={
 };
 init();
 document.addEventListener('visibilitychange',refrescar);
-setInterval(refrescar, 60000);
+window.addEventListener('focus',refrescar);
+setInterval(refrescar, 45000);
 if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js') }catch(e){} }
 </script>
 </body>
