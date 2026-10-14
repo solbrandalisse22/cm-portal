@@ -3,21 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Tu CM</title>
+<title>tu cm digital</title>
 <meta name="description" content="Portal de tu community manager: revisá y aprobá tu semana de Instagram, mandá fotos y escribinos.">
-<meta name="theme-color" content="#1F2A44">
+<meta name="theme-color" content="#161616">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Tu CM">
+<meta name="apple-mobile-web-app-title" content="tu cm digital">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@300;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#F5F6F8;--card:#FFFFFF;--tx:#1B1F2A;--tx2:#5B6272;--tx3:#8A90A0;--line:#E3E6EC;--brand:#1F2A44;--acc:#3D6BFF;--acc-bg:#E8EEFF;
+:root{--bg:#F7F5F2;--card:#FFFFFF;--tx:#161616;--tx2:#5C5A57;--tx3:#8C8985;--line:#E7E3DE;--brand:#161616;--acc:#D9480F;--acc-bg:#FFEDE2;--naranja:#FF6B1A;--on-acc:#FFFFFF;
 --ok:#137A4B;--ok-bg:#E3F5EC;--warn:#9A5B00;--warn-bg:#FFF2DB;--bad:#B4232C;--bad-bg:#FDE8E9;--r:14px}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0F1218;--card:#181C25;--tx:#ECEFF5;--tx2:#A7AEBD;--tx3:#7C8394;--line:#2A303C;--brand:#ECEFF5;--acc:#7C9BFF;--acc-bg:#1E2747;
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#121212;--card:#1C1C1C;--tx:#F2F0ED;--tx2:#B3AFA9;--tx3:#85817C;--line:#2E2C2A;--brand:#F2F0ED;--acc:#FF7A33;--acc-bg:#33200F;--on-acc:#161616;
 --ok:#5FD39A;--ok-bg:#12291F;--warn:#F0B35A;--warn-bg:#2E2412;--bad:#FF7A80;--bad-bg:#331518}}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{background:var(--bg);color:var(--tx);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
@@ -55,7 +55,7 @@ h2{font-size:18px;font-weight:600;margin:22px 0 10px}
 .stk{font-size:13px;background:var(--acc-bg);color:var(--acc);padding:8px 10px;border-radius:10px;margin-top:10px}
 .row{display:flex;gap:8px;margin-top:14px}
 .btn{flex:1;padding:11px 12px;border-radius:12px;font-weight:600;font-size:15px;border:1px solid var(--line);background:var(--card);text-align:center}
-.btn.pri{background:var(--brand);color:var(--bg);border-color:var(--brand)}
+.btn.pri{background:var(--acc);color:var(--on-acc);border-color:var(--acc)}
 .btn.okb{background:var(--ok);color:#fff;border-color:var(--ok)}
 .btn:disabled{opacity:.5;cursor:default}
 textarea,input[type=text]{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--card);resize:vertical;min-height:52px}
@@ -85,12 +85,15 @@ textarea:focus,input:focus{outline:2px solid var(--acc);outline-offset:1px}
 .err{color:var(--bad);font-size:13px;margin-top:6px}
 .skel{height:220px;border-radius:var(--r);background:linear-gradient(90deg,var(--line),var(--card),var(--line));background-size:200% 100%;animation:sk 1.2s infinite}
 @keyframes sk{to{background-position:-200% 0}}
+.marca{font-family:Outfit,Inter,sans-serif;font-size:24px;letter-spacing:-.5px;line-height:1;color:var(--tx);white-space:nowrap}.marca span{font-weight:300}.marca b{font-weight:800;color:var(--naranja)}
+.mlogo{margin-bottom:14px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 /* compu */
 @media (min-width:900px){
   .bottom{display:none}
   .side{display:flex;flex-direction:column;gap:4px;width:240px;flex:0 0 240px;padding:24px 14px;border-right:1px solid var(--line);background:var(--card);position:sticky;top:0;height:100vh}
-  .side .logo{font-weight:700;font-size:18px;padding:6px 12px 20px;color:var(--brand)}
+  .side .logo{padding:4px 12px 22px}
+  .mlogo{display:none}
   .side .tab{flex-direction:row;font-size:15px;gap:12px;padding:10px 12px;color:var(--tx2);justify-content:flex-start}
   .side .tab.on{background:var(--acc-bg);color:var(--acc)}
   .side .dot{position:static;margin-left:auto}
@@ -172,7 +175,7 @@ function cargar(){
     if(d.error){ $('main').innerHTML='<div class="empty">'+ICON.vacio+'<h1>No pudimos abrir tu portal</h1><p class="sub" style="margin-top:6px">Revisá que el link sea el último que te mandamos.</p></div>'; return; }
     S.datos=d;
     if(d.cliente.fase==='alta' && !d.alta.enviado && !S._tabElegida) S.tab='alta';
-    document.title='Tu CM · '+d.cliente.nombre;
+    document.title='tu cm digital · '+d.cliente.nombre;
     dibujar();
   }).catch(function(){ $('main').innerHTML='<div class="empty">'+ICON.vacio+'<h1>Sin conexión</h1><p class="sub" style="margin-top:6px">Revisá tu internet y volvé a intentar.</p><div class="row" style="justify-content:center"><button class="btn pri" style="flex:0 0 auto" onclick="cargar()">Reintentar</button></div></div>'; });
 }
@@ -195,7 +198,7 @@ function dibujar(){
 }
 function dibujarNav(){
   if(S.tab==='mensajes') marcarLeidos();
-  var html='', side='<div class="logo">Tu CM</div>', pen=pendientes(), nl=noLeidos();
+  var html='', side='<div class="logo"><div class="marca"><span>tu </span><b>cm</b><span> digital</span></div></div>', pen=pendientes(), nl=noLeidos();
   try{ if(navigator.setAppBadge){ (pen+nl)?navigator.setAppBadge(pen+nl):navigator.clearAppBadge() } }catch(e){}
   tabs().forEach(function(t){
     var dot=(t.id==='semana'&&pen)?'<span class="dot" aria-label="'+pen+' para revisar"></span>':
@@ -216,7 +219,7 @@ function refrescar(){
   }).catch(function(){});
 }
 function ir(t){S.tab=t;S._tabElegida=true;dibujar()}
-function cabecera(titulo,sub){return '<header class="top"><div><div class="hi">'+esc(S.datos.cliente.nombre)+'</div><h1>'+titulo+'</h1>'+(sub?'<p class="sub">'+sub+'</p>':'')+'</div></header>'}
+function cabecera(titulo,sub){return '<div class="mlogo"><div class="marca" style="font-size:19px"><span>tu </span><b>cm</b><span> digital</span></div></div><header class="top"><div><div class="hi">'+esc(S.datos.cliente.nombre)+'</div><h1>'+titulo+'</h1>'+(sub?'<p class="sub">'+sub+'</p>':'')+'</div></header>'}
 
 // ---------- Tu semana ----------
 var ESTADO={'para-revisar':['b-rev','Para revisar'],'aprobado':['b-ok','Aprobado ✓'],'cambio-pedido':['b-cam','Cambio pedido']};
