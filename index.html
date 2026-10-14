@@ -324,10 +324,10 @@ function vAlta(){
   h+='<h2>Tu logo</h2><label class="drop" for="logo">'+ICON.subir+'<div style="margin-top:6px;font-weight:600;color:var(--tx)">Subir logo</div><div style="font-size:13px">Ideal PNG sin fondo, en la mejor calidad que tengas</div></label><input type="file" id="logo" class="sr" accept="image/*" onchange="subirArchivos(this.files,\'logo\',\'lAlta\')">'
     +'<h2>Fotos y videos</h2><label class="drop" for="fts">'+ICON.material+'<div style="margin-top:6px;font-weight:600;color:var(--tx)">Subir 10 a 20 fotos reales</div><div style="font-size:13px">El lugar, productos, equipo, trabajos · y 2 o 3 videos cortos si quieren reels</div></label><input type="file" id="fts" class="sr" accept="image/*,video/*" multiple onchange="subirArchivos(this.files,\'alta\',\'lAlta\')">'
     +'<div class="list" id="lAlta"></div>'
-    +'<div class="err" id="altaErr"></div><div class="row" style="margin-top:22px"><button class="btn pri" onclick="enviarAlta(this)">Enviar respuestas ('+hechas+'/'+qs.length+')</button></div>';
+    +'<div class="err" id="altaErr"></div><div class="row" style="margin-top:22px"><button class="btn pri" onclick="enviarAlta(this)">'+(S._editando?'Mandar cambios':'Enviar respuestas ('+hechas+'/'+qs.length+')')+'</button></div>';
   $('main').innerHTML=h;
 }
-function editarAlta(){S.datos.alta.enviado=false;vAlta()}
+function editarAlta(){S.datos.alta.enviado=false;S._editando=true;vAlta()}
 function guardarResp(el){
   var v=el.value, k=el.getAttribute('data-q'), a=S.datos.alta; a.respuestas=a.respuestas||{};
   if((a.respuestas[k]||'')===v) return; a.respuestas[k]=v; var o={}; o[k]=v;
@@ -338,7 +338,7 @@ function enviarAlta(b){
   qs.forEach(function(q){var el=$('q_'+q.id); if(el) todo[q.id]=el.value});
   var oblig=qs.filter(function(q){return !q.opcional}), falta=oblig.filter(function(q){return !(todo[q.id]||'').trim()}).length;
   if(falta>Math.floor(oblig.length/2)){ $('altaErr').textContent='Respondé al menos la mitad de las preguntas (te faltan '+falta+'). Lo demás lo vemos después.'; return; }
-  b.disabled=true; post({accion:'alta_enviar',respuestas:todo}).then(function(r){ if(r.ok){a.respuestas=todo;a.enviado=true;toast('¡Gracias!');vAlta()} else {b.disabled=false;toast('No se pudo enviar')} });
+  b.disabled=true; post({accion:'alta_enviar',respuestas:todo}).then(function(r){ if(r.ok){a.respuestas=todo;a.enviado=true;toast(S._editando?'Cambios enviados ✓':'¡Gracias!');S._editando=false;vAlta()} else {b.disabled=false;toast('No se pudo enviar')} });
 }
 
 // ---------- modo demo (?demo=1): datos de ejemplo, no guarda nada ----------
