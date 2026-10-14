@@ -290,7 +290,9 @@ function vAgenda(){
     var p=x.p, tp=TIPO[p.tipo]||['📌','Publicación'], d=x.t?x.t.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'}):'Sin fecha';
     if(d!==dia){dia=d;h+='<h3 class="mini">'+esc(d.charAt(0).toUpperCase()+d.slice(1))+'</h3>'}
     var manual=(x.sem.publicacion||(x.sem.avisos?'manual':''))!=='metricool', preguntar=false, est;
-    if(ver==='proximas') est=ESTADO[p.estado]||['b-rev','Para revisar'];
+    if(ver==='proximas'){ est=ESTADO[p.estado]||['b-rev','Para revisar'];
+      if(p.publicado===true) est=['b-ok','✓ Publicada'];
+      else if(manual && p.estado==='aprobado' && x.t && x.t-ahora<30*60000 && p.publicado!==false) preguntar=true; }   // desde 30 min antes ya puede marcarla
     else if(p.estado!=='aprobado') est=['b-no','No se aprobó'];
     else if(p.publicado===true) est=['b-ok','✓ Publicada'];
     else if(p.publicado===false) est=['b-no','No se publicó'];
