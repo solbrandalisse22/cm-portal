@@ -72,6 +72,7 @@ textarea:focus,input:focus{outline:2px solid var(--acc);outline-offset:1px}
 .item .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bar{height:6px;border-radius:6px;background:var(--line);overflow:hidden;width:90px}.bar i{display:block;height:100%;background:var(--acc);width:0}
 .btn:disabled{opacity:.4;cursor:default}
+.drv{display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:inherit;text-decoration:none}.drv img{display:block}.adj-v .drv{display:inline}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50;opacity:0;transition:opacity .15s}.modal.on{opacity:1}
 .modal-c{background:var(--card);color:var(--tx);border-radius:18px;padding:22px 20px 16px;width:100%;max-width:360px;box-shadow:0 20px 50px rgba(0,0,0,.25);transform:translateY(8px);transition:transform .15s}.modal.on .modal-c{transform:none}
 .modal-c h3{font-size:18px;font-weight:700;margin-bottom:6px}.modal-c p{color:var(--tx2);font-size:15px;margin-bottom:16px}
@@ -280,7 +281,7 @@ function cargarImgP(p,i,k){   // vista previa con flechas para carruseles (Tu se
     if(n>1){ nav='<span class="multi">'+(k+1)+'/'+n+'</span>';
       if(k>0) nav+='<button class="nav-img" style="left:10px" aria-label="Anterior">‹</button>';
       if(k<n-1) nav+='<button class="nav-img" style="right:10px" aria-label="Siguiente">›</button>'; }
-    box.innerHTML=(r&&r.base64?'<img alt="" src="data:'+r.tipo+';base64,'+r.base64+'">':'Sin vista previa')+nav;
+    box.innerHTML=enDrive(id, r&&r.base64?'<img alt="" src="data:'+r.tipo+';base64,'+r.base64+'">':'Sin vista previa')+nav;
     box.querySelectorAll('.nav-img').forEach(function(b){ b.onclick=function(){ cargarImgP(p,i,b.style.left?k-1:k+1) } });
   };
   if(CACHE[id]) return pintar(CACHE[id]);
@@ -361,7 +362,7 @@ function marcarPublicada(i,v,b){
 function verAgenda(i){
   var x=S._agenda[i], id=(x.p.archivos||[])[0], box=$('ag_'+i); if(!box||!id||box.innerHTML) return;
   box.textContent='Cargando…';
-  var pintar=function(r){box.innerHTML=r&&r.base64?'<img alt="" src="data:'+r.tipo+';base64,'+r.base64+'">':(r&&/^video/.test(r.tipo)?'🎬 Video':'Sin vista previa')};
+  var pintar=function(r){box.innerHTML=enDrive(id, r&&r.base64?'<img alt="" src="data:'+r.tipo+';base64,'+r.base64+'">':(r&&/^video/.test(r.tipo)?'🎬 Video':'Sin vista previa'))};
   if(CACHE[id]) return pintar(CACHE[id]);
   get({accion:'imagen',id:id}).then(function(r){CACHE[id]=r;pintar(r)}).catch(function(){box.textContent='No se pudo cargar'});
 }
@@ -372,7 +373,7 @@ function cargarImg(i,k){
     if(n>1){ nav='<span class="multi">'+(k+1)+'/'+n+'</span>';
       if(k>0) nav+='<button class="nav-img" style="left:10px" aria-label="Anterior" onclick="cargarImg('+i+','+(k-1)+')">‹</button>';
       if(k<n-1) nav+='<button class="nav-img" style="right:10px" aria-label="Siguiente" onclick="cargarImg('+i+','+(k+1)+')">›</button>'; }
-    box.innerHTML=(r&&r.base64?'<img alt="'+esc(p.titulo)+' ('+(k+1)+')" src="data:'+r.tipo+';base64,'+r.base64+'">':(r&&/^video/.test(r.tipo)?'🎬 Video: lo ves en el link del mail':'Sin vista previa'))+nav;
+    box.innerHTML=enDrive(id,(r&&r.base64?'<img alt="'+esc(p.titulo)+' ('+(k+1)+')" src="data:'+r.tipo+';base64,'+r.base64+'">':(r&&/^video/.test(r.tipo)?'🎬 Video: tocá para verlo en Drive':'Sin vista previa')))+nav;
   };
   if(CACHE[id]) return pintar(CACHE[id]);
   get({accion:'imagen',id:id}).then(function(r){CACHE[id]=r;pintar(r)}).catch(function(){box.textContent='No se pudo cargar la vista previa'});
@@ -450,7 +451,7 @@ function vMensajes(){
     var m=x.m, yo=m.de==='cliente';
     h+='<div class="msg '+(yo?'cliente':'cm')+'">'+(m.texto?esc(m.texto):'');
     if((m.adjuntos||[]).length){ h+='<div class="adj">'+m.adjuntos.map(function(a){
-        if(/^video/.test(a.tipo||'')||/\.(mov|mp4|m4v)$/i.test(a.nombre||'')) return '<span class="adj-v">🎬 '+esc(a.nombre||'video')+'</span>';
+        if(/^video/.test(a.tipo||'')||/\.(mov|mp4|m4v)$/i.test(a.nombre||'')) return '<span class="adj-v">'+enDrive(a.id,'🎬 '+esc(a.nombre||'video'))+'</span>';
         S._img.push(a.id); return '<span class="adj-i" data-img="'+esc(a.id)+'"></span>'; }).join('')+'</div>'; }
     (m.piezas||[]).forEach(function(id){ var p=piezaPorId(id); if(p) h+=tarjetaChat(p); });
     h+='<small>'+fecha(m.fecha)+'</small></div>';
@@ -481,8 +482,9 @@ function tarjetaChat(p){
       +'<button class="descartar" onclick="descartar(\''+id+'\',this)">🗑️ Descartar, no la quiero</button>':'')
     +'</div></div>';
 }
+function enDrive(id,img){ return '<a class="drv" href="https://drive.google.com/file/d/'+encodeURIComponent(id)+'/view" target="_blank" rel="noopener" title="Abrir en Drive">'+img+'</a>'; }
 function cargarMini(id){
-  var pintar=function(r){ document.querySelectorAll('[data-img="'+id+'"]').forEach(function(el){ el.innerHTML=r&&r.base64?'<img alt="" src="data:'+r.tipo+';base64,'+r.base64+'">':'🖼️'; }); };
+  var pintar=function(r){ document.querySelectorAll('[data-img="'+id+'"]').forEach(function(el){ el.innerHTML=enDrive(id, r&&r.base64?'<img alt="" src="data:'+r.tipo+';base64,'+r.base64+'">':'🖼️'); }); };
   if(CACHE[id]) return pintar(CACHE[id]);
   get({accion:'imagen',id:id}).then(function(r){CACHE[id]=r;pintar(r)}).catch(function(){pintar(null)});
 }
