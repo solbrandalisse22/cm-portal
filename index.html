@@ -71,12 +71,23 @@ textarea:focus,input:focus{outline:2px solid var(--acc);outline-offset:1px}
 .item{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14px}
 .item .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bar{height:6px;border-radius:6px;background:var(--line);overflow:hidden;width:90px}.bar i{display:block;height:100%;background:var(--acc);width:0}
+.btn:disabled{opacity:.4;cursor:default}
+.semnav{display:flex;justify-content:space-between;gap:8px;margin-bottom:14px}.semnav .btn{flex:0 0 auto}
+.pz-ok{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;font-size:13px;color:var(--ok)}
 .chat{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.adj{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.adj-i{width:84px;height:84px;border-radius:10px;overflow:hidden;background:rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;font-size:20px}.adj-i img{width:100%;height:100%;object-fit:cover}
+.adj-v{font-size:13px;padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.08)}
+.pz{background:var(--bg);border:1px solid var(--line);border-radius:12px;margin-top:8px;overflow:hidden;color:var(--tx);white-space:normal}
+.pz-imgs{display:flex;gap:4px;overflow-x:auto;background:var(--line)}.adj-i.grande{width:220px;height:auto;min-height:120px;border-radius:0;flex:0 0 auto}.adj-i.grande img{height:auto}
+.pz-b{padding:10px 12px}.pz .meta{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--tx2);align-items:center}.pz .tit{font-weight:600;margin:4px 0}
+.pz .coment{display:none;margin-top:8px}.pz .coment.on{display:block}.pz textarea{width:100%;min-height:60px}
+.tray{display:flex;flex-wrap:wrap;gap:6px}.tray:empty{display:none}.chip-a{font-size:12px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 6px 4px 10px;display:inline-flex;align-items:center;gap:4px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.chip-a button{color:var(--tx3);font-size:12px;padding:0 4px}
+.row-send{display:flex;gap:8px;align-items:flex-end;width:100%}.clip{font-size:22px;cursor:pointer;padding:6px 4px;line-height:1}
 .msg{max-width:82%;padding:10px 14px;border-radius:16px;font-size:15px;white-space:pre-wrap}
 .msg.cm{background:var(--card);border:1px solid var(--line);align-self:flex-start;border-bottom-left-radius:4px}
 .msg.cliente{background:var(--brand);color:var(--bg);align-self:flex-end;border-bottom-right-radius:4px}
 .msg small{display:block;font-size:11px;opacity:.65;margin-top:4px}
-.send{display:flex;gap:8px;align-items:flex-end;position:sticky;bottom:84px;background:var(--bg);padding-top:8px}
+.send{display:flex;flex-direction:column;gap:6px;align-items:stretch;position:sticky;bottom:84px;background:var(--bg);padding-top:8px}
 .send textarea{min-height:48px}
 .send .btn{flex:0 0 auto}
 .resp{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin-bottom:10px}.rq{font-size:13px;color:var(--tx2);margin-bottom:4px}.ra{white-space:pre-wrap}.ra.vacia{color:var(--tx3);font-style:italic}
@@ -152,7 +163,7 @@ var PREGUNTAS_BASE = [
   {id:'aclaraciones', opcional:true, texto:'¿Algo más que quieras aclarar? (opcional)', ayuda:'Cómo te gustaría que se vean o qué evitar. Ej.: "que las historias no sean todas iguales, que varíen los colores", "más fotos y menos texto".'}
 ];
 
-var S = {clave:'', datos:null, tab:'semana', demo:false, subiendo:{}};
+var S = {clave:'', datos:null, tab:'mensajes', demo:false, subiendo:{}};
 function $(id){return document.getElementById(id)}
 function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function toast(t){var e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(function(){e.classList.remove('on')},2600)}
@@ -193,20 +204,19 @@ function cargar(){
 function tabs(){
   var d=S.datos, t=[];
   if(d.cliente.fase==='alta') t.push({id:'alta',txt:'Bienvenida'});
+  t.push({id:'mensajes',txt:'Mandar material'});
   t.push({id:'semana',txt:'Tu semana'});
   if(d.cliente.fase!=='alta') t.push({id:'agenda',txt:'Agenda'});
-  t.push({id:'material',txt:'Mandar material'});
-  t.push({id:'mensajes',txt:'Mensajes'});
   if(d.cliente.fase!=='alta') t.push({id:'datos',txt:'Mis datos'});
   return t;
 }
 function claveVisto(){return 'cm_visto_'+(S.demo?'demo':S.clave)}
 function noLeidos(){var v=leerLocal(claveVisto());return (S.datos.mensajes||[]).filter(function(m){return m.de!=='cliente'&&(!v||m.fecha>v)}).length}
 function marcarLeidos(){var ms=S.datos.mensajes||[],u='';ms.forEach(function(m){if(m.fecha>u)u=m.fecha});if(u)guardarLocal(claveVisto(),u)}
-function pendientes(){var s=S.datos.semana;return s?s.piezas.filter(function(p){return p.estado==='para-revisar'}).length:0}
+function pendientes(){var n=0;todasPiezas().forEach(function(s){(s.piezas||[]).forEach(function(p){if(p.estado==='para-revisar')n++})});return n}
 function dibujar(){
   dibujarNav();
-  ({semana:vSemana,agenda:vAgenda,material:vMaterial,mensajes:vMensajes,alta:vAlta,datos:vAlta})[S.tab]();
+  ({semana:vSemana,agenda:vAgenda,mensajes:vMensajes,alta:vAlta,datos:vAlta})[S.tab]();
   window.scrollTo(0,0);
 }
 function dibujarNav(){
@@ -214,8 +224,7 @@ function dibujarNav(){
   var html='', side='<div class="logo"><div class="marca"><span>tu </span><b>cm</b><span> digital</span></div></div>', pen=pendientes(), nl=noLeidos();
   try{ if(navigator.setAppBadge){ (pen+nl)?navigator.setAppBadge(pen+nl):navigator.clearAppBadge() } }catch(e){}
   tabs().forEach(function(t){
-    var dot=(t.id==='semana'&&pen)?'<span class="dot" aria-label="'+pen+' para revisar"></span>':
-            (t.id==='mensajes'&&nl)?'<span class="dot" aria-label="'+nl+(nl>1?' mensajes nuevos':' mensaje nuevo')+'"></span>':'';
+    var dot=(t.id==='mensajes'&&(pen||nl))?'<span class="dot" aria-label="'+(pen?pen+' para revisar':'')+(pen&&nl?' · ':'')+(nl?nl+(nl>1?' mensajes nuevos':' mensaje nuevo'):'')+'"></span>':'';
     var b='<button class="tab'+(S.tab===t.id?' on':'')+'" onclick="ir(\''+t.id+'\')" aria-current="'+(S.tab===t.id)+'">'+ICON[t.id]+'<span>'+t.txt+'</span>'+dot+'</button>';
     html+=b; side+=b;
   });
@@ -227,7 +236,7 @@ function refrescar(){
   get({accion:'ver'}).then(function(d){
     if(!d || d.error) return;
     var antes=(S.datos.mensajes||[]).length; S.datos=d;
-    if(S.tab==='mensajes' && (d.mensajes||[]).length!==antes && !$('txt').value) vMensajes();
+    if(S.tab==='mensajes' && lineaTiempo().length!==S._cantChat && !(S.borrador||'') && !(S.pend||[]).length) vMensajes();
     dibujarNav();
   }).catch(function(){});
 }
@@ -236,7 +245,43 @@ function cabecera(titulo,sub){return '<div class="mlogo"><div class="marca" styl
 
 // ---------- Tu semana ----------
 var ESTADO={'para-revisar':['b-rev','Para revisar'],'aprobado':['b-ok','Aprobado ✓'],'cambio-pedido':['b-cam','Cambio pedido']};
+function semanasConAprobadas(){ return todasPiezas().filter(function(s){return s.lunes!=='muestra'&&(s.piezas||[]).some(function(p){return p.estado==='aprobado'||p.aprobado_fecha})}); }
 function vSemana(){
+  if(S.datos.cliente.fase==='alta') return vSemanaRevision();
+  var sems=semanasConAprobadas();
+  if(!sems.length){ $('main').innerHTML=cabecera('Tu semana')+'<div class="empty">'+ICON.vacio+'<p>Todavía no aprobaste publicaciones.<br>Las piezas te llegan en <b>Mandar material</b>: cuando las aprobás, aparecen acá.</p></div>'; return; }
+  if(S.semIdx==null||S.semIdx>=sems.length) S.semIdx=sems.length-1;
+  var s=sems[S.semIdx], ps=(s.piezas||[]).filter(function(p){return p.estado==='aprobado'||p.aprobado_fecha})
+    .map(function(p){return {p:p,t:cuandoDe(p,s)}}).sort(function(a,b){return (a.t||0)-(b.t||0)});
+  var h=cabecera(esc(s.titulo||'Tu semana'),ps.length+' publicaciones aprobadas')
+    +'<div class="semnav"><button class="btn" '+(S.semIdx>0?'':'disabled')+' onclick="S.semIdx--;vSemana()">‹ Semana anterior</button><button class="btn" '+(S.semIdx<sems.length-1?'':'disabled')+' onclick="S.semIdx++;vSemana()">Semana siguiente ›</button></div><div class="grid">';
+  S._sem=ps;
+  ps.forEach(function(x,i){ var p=x.p, n=(p.archivos||[]).length, hist=p.tipo==='historia'||p.tipo==='reel', ok=p.estado==='aprobado';
+    var cuando=x.t?x.t.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'numeric'})+' · '+x.t.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false})+' hs':(p.dia||'');
+    h+='<article class="card"><div class="prev'+(hist?' hist':'')+'" id="img_'+i+'">'+(n?'Cargando vista previa…':'Sin vista previa')+(n>1?'<span class="multi">1/'+n+'</span>':'')+'</div>'
+      +'<div class="body"><div class="meta"><span>'+esc(cap1(p.tipo))+' · '+esc(cuando)+'</span><span class="badge '+(ok?'b-ok':'b-rev')+'">'+(ok?'Aprobado ✓':'En revisión')+'</span></div>'
+      +'<div class="tit">'+esc(p.titulo||'')+'</div>'
+      +(p.texto?'<div class="cap" id="cap_'+i+'">'+esc(p.texto)+'</div><button class="more" onclick="verMas('+i+',this)">Ver texto completo</button>':'')
+      +(p.stickers?'<div class="stk">📌 Al publicar: '+esc(p.stickers)+'</div>':'')
+      +(!ok?'<div class="stk">Estamos rehaciendo esta pieza: la versión nueva te llega en Mandar material.</div>'
+        :'<div class="row"><button class="btn" onclick="abrirCambio('+i+')">Pedir un cambio</button></div><div class="coment" id="cm_'+i+'"><textarea id="ct_'+i+'" placeholder="¿Qué te gustaría cambiar?"></textarea><div class="err" id="ce_'+i+'"></div><div class="row"><button class="btn pri" onclick="pedirCambio(\''+esc(p.id)+'\','+i+',this)">Enviar pedido</button></div></div>')
+      +'</div></article>'; });
+  $('main').innerHTML=h+'</div>';
+  ps.forEach(function(x,i){ if((x.p.archivos||[]).length) cargarImgP(x.p,i,0); });
+}
+function cargarImgP(p,i,k){   // vista previa con flechas para carruseles (Tu semana)
+  var id=p.archivos[k], box=$('img_'+i); if(!box) return;
+  var pintar=function(r){ var n=p.archivos.length, nav='';
+    if(n>1){ nav='<span class="multi">'+(k+1)+'/'+n+'</span>';
+      if(k>0) nav+='<button class="nav-img" style="left:10px" aria-label="Anterior">‹</button>';
+      if(k<n-1) nav+='<button class="nav-img" style="right:10px" aria-label="Siguiente">›</button>'; }
+    box.innerHTML=(r&&r.base64?'<img alt="" src="data:'+r.tipo+';base64,'+r.base64+'">':'Sin vista previa')+nav;
+    box.querySelectorAll('.nav-img').forEach(function(b){ b.onclick=function(){ cargarImgP(p,i,b.style.left?k-1:k+1) } });
+  };
+  if(CACHE[id]) return pintar(CACHE[id]);
+  get({accion:'imagen',id:id}).then(function(r){CACHE[id]=r;pintar(r)}).catch(function(){box.textContent='No se pudo cargar la vista previa'});
+}
+function vSemanaRevision(){
   var s=S.datos.semana;
   if(!s||!s.piezas||!s.piezas.length){ $('main').innerHTML=cabecera('Tu semana')+'<div class="empty">'+ICON.vacio+'<p>Todavía no hay publicaciones para revisar.<br>Cuando estén listas te avisamos por mail.</p></div>'; return; }
   var pen=pendientes(), apr=s.piezas.filter(function(p){return p.estado==='aprobado'}).length;
@@ -273,7 +318,7 @@ function cuandoDe(p,sem){
 function piezasAgenda(){
   var l=[], sems=(S.datos.historial_semanas||[]).concat(S.datos.semana?[S.datos.semana]:[]);
   sems.forEach(function(sem){ if(sem.lunes==='muestra') return;
-    (sem.piezas||[]).forEach(function(p){ l.push({p:p,t:cuandoDe(p,sem),sem:sem}) }) });
+    (sem.piezas||[]).forEach(function(p){ if(p.estado==='aprobado'||p.aprobado_fecha) l.push({p:p,t:cuandoDe(p,sem),sem:sem}) }) });
   return l;
 }
 var TIPO={post:['🖼️','Post'],carrusel:['🗂️','Carrusel'],reel:['🎬','Reel'],historia:['📱','Historia']};
@@ -334,7 +379,7 @@ function pedirCambio(id,i,b){
   $('ce_'+i).textContent=''; b.disabled=true;
   post({accion:'cambio',pieza:id,comentario:t}).then(function(r){ if(r.ok){toast('Listo, te mandamos la versión nueva');marcar(id,'cambio-pedido',t)} else {b.disabled=false;toast('No se pudo enviar')} });
 }
-function marcar(id,estado,com){S.datos.semana.piezas.forEach(function(p){if(p.id===id){p.estado=estado;p.comentario=com}});dibujar()}
+function marcar(id,estado,com){var p=piezaPorId(id);if(p){p.estado=estado;p.comentario=com;if(estado==='aprobado')p.aprobado_fecha=new Date().toISOString()}(S.datos.feedback=S.datos.feedback||[]).push({pieza:id,accion:estado==='aprobado'?'aprobar':'cambio',comentario:com,fecha:new Date().toISOString()});if(estado==='cambio-pedido')toast('Listo: la versión nueva te llega en Mandar material');dibujar()}
 
 // ---------- Mandar material ----------
 function vMaterial(){
@@ -375,18 +420,95 @@ function subirArchivos(files,para,listaId){
   });
 }
 
-// ---------- Mensajes ----------
-function vMensajes(){
-  var ms=S.datos.mensajes||[];
-  var h=cabecera('Mensajes','Escribinos lo que necesites. Te respondemos en el día.')+'<div class="chat" id="chat">';
-  if(!ms.length) h+='<div class="msg cm">¡Hola! Por acá podés escribirnos lo que quieras: ideas, dudas o cambios.</div>';
-  ms.forEach(function(m){h+='<div class="msg '+(m.de==='cliente'?'cliente':'cm')+'">'+esc(m.texto)+'<small>'+fecha(m.fecha)+'</small></div>'});
-  h+='</div><div class="send"><textarea id="txt" rows="1" placeholder="Escribí un mensaje…" aria-label="Mensaje"></textarea><button class="btn pri" onclick="mandarMsg(this)">Enviar</button></div>';
-  $('main').innerHTML=h; window.scrollTo(0,document.body.scrollHeight);
+// ---------- Chat: un solo lugar para mandar info y fotos, pedir cosas, ver las piezas y aprobarlas ----------
+function todasPiezas(){ return (S.datos.historial_semanas||[]).concat(S.datos.semana?[S.datos.semana]:[]); }
+function piezaPorId(id){ var sems=todasPiezas(); for(var i=sems.length-1;i>=0;i--){ var p=(sems[i].piezas||[]).filter(function(x){return x.id===id})[0]; if(p) return p; } return null; }
+function lineaTiempo(){
+  var l=[], usados={};
+  (S.datos.mensajes||[]).forEach(function(m){ l.push({t:m.fecha,m:m}); (m.adjuntos||[]).forEach(function(a){usados[a.id]=1}); });
+  (S.datos.notas||[]).forEach(function(n){ l.push({t:n.fecha,m:{de:'cliente',texto:n.texto,fecha:n.fecha}}); });
+  (S.datos.feedback||[]).forEach(function(f){ l.push({t:f.fecha,fb:f}); });
+  var grupo=null;   // material subido por fuera del chat (versiones anteriores): se agrupa
+  (S.datos.material||[]).filter(function(a){return a.id&&!usados[a.id]&&a.para!=='logo'}).forEach(function(a){
+    if(grupo && new Date(a.fecha)-new Date(grupo.t)<10*60000){ grupo.m.adjuntos.push(a); return; }
+    grupo={t:a.fecha,m:{de:'cliente',texto:'',fecha:a.fecha,adjuntos:[a]}}; l.push(grupo);
+  });
+  return l.sort(function(a,b){return String(a.t).localeCompare(String(b.t))});
 }
+function vMensajes(){
+  var l=lineaTiempo(), h=cabecera('Mandar material','Mandanos la info, fotos y pedidos. Las piezas te llegan acá para aprobar; lo aprobado pasa a Tu semana.')+'<div class="chat" id="chat">';
+  if(!l.length) h+='<div class="msg cm">¡Hola! Por acá mandame todo: qué pasó esta semana, fotos (con el 📎), ideas o pedidos. Te respondo acá mismo con las piezas para que las apruebes.</div>';
+  S._img=[];
+  l.forEach(function(x){
+    if(x.fb){ var p=piezaPorId(x.fb.pieza), tt=p?p.titulo:x.fb.pieza;
+      h+='<div class="msg cliente">'+(x.fb.accion==='aprobar'?'✅ Aprobé «'+esc(tt)+'»':'✏️ Cambio en «'+esc(tt)+'»: '+esc(x.fb.comentario||''))+'<small>'+fecha(x.t)+'</small></div>'; return; }
+    var m=x.m, yo=m.de==='cliente';
+    h+='<div class="msg '+(yo?'cliente':'cm')+'">'+(m.texto?esc(m.texto):'');
+    if((m.adjuntos||[]).length){ h+='<div class="adj">'+m.adjuntos.map(function(a){
+        if(/^video/.test(a.tipo||'')||/\.(mov|mp4|m4v)$/i.test(a.nombre||'')) return '<span class="adj-v">🎬 '+esc(a.nombre||'video')+'</span>';
+        S._img.push(a.id); return '<span class="adj-i" data-img="'+esc(a.id)+'"></span>'; }).join('')+'</div>'; }
+    (m.piezas||[]).forEach(function(id){ var p=piezaPorId(id); if(p) h+=tarjetaChat(p); });
+    h+='<small>'+fecha(m.fecha)+'</small></div>';
+  });
+  var mostradas={}; (S.datos.mensajes||[]).forEach(function(m){(m.piezas||[]).forEach(function(id){mostradas[id]=1})});
+  var sueltas=[]; todasPiezas().forEach(function(sem){(sem.piezas||[]).forEach(function(p){ if(p.estado==='para-revisar'&&!mostradas[p.id]) sueltas.push(p) })});
+  if(sueltas.length){ h+='<div class="msg cm">📌 Para revisar:'; sueltas.forEach(function(p){h+=tarjetaChat(p)}); h+='</div>'; }
+  var pend=S.pend||[];
+  h+='</div><div class="send"><div class="tray" id="tray">'+pend.map(function(a,k){return '<span class="chip-a">'+(a.estado==='ok'?'✓':a.estado==='err'?'⚠️':'⏳')+' '+esc(a.nombre)+' <button aria-label="Quitar" onclick="quitarAdj('+k+')">✕</button></span>'}).join('')+'</div>'
+    +'<div class="row-send"><label class="clip" for="adjIn" title="Adjuntar fotos o videos" aria-label="Adjuntar fotos o videos">📎</label><input type="file" id="adjIn" class="sr" accept="image/*,video/*" multiple onchange="adjuntar(this.files)">'
+    +'<textarea id="txt" rows="1" placeholder="Escribí o adjuntá fotos…" aria-label="Mensaje">'+esc(S.borrador||'')+'</textarea><button class="btn pri" onclick="mandarMsg(this)">Enviar</button></div></div>';
+  $('main').innerHTML=h;
+  $('txt').addEventListener('input',function(){S.borrador=this.value});
+  window.scrollTo(0,document.body.scrollHeight);
+  S._img.forEach(function(id){ cargarMini(id) });
+  S._cantChat=l.length;
+}
+function tarjetaChat(p){
+  if(p.estado==='aprobado') return '<div class="pz pz-ok"><span>✓ «'+esc(p.titulo||'')+'» aprobada · ya está en Tu semana</span><button class="more" onclick="ir(\'semana\')">Ver</button></div>';
+  var e=ESTADO[p.estado]||ESTADO['para-revisar'], id=esc(p.id), tp=(TIPO[p.tipo]||['📌','Publicación'])[1];
+  (p.archivos||[]).forEach(function(a){S._img.push(a)});
+  return '<div class="pz"><div class="pz-imgs">'+(p.archivos||[]).map(function(a){return '<span class="adj-i grande" data-img="'+esc(a)+'"></span>'}).join('')+'</div>'
+    +'<div class="pz-b"><div class="meta"><span>'+esc(tp)+(p.dia?' · '+esc(p.dia):'')+(p.hora?' · '+esc(p.hora)+' hs':'')+'</span><span class="badge '+e[0]+'">'+e[1]+'</span></div>'
+    +'<div class="tit">'+esc(p.titulo||'')+'</div>'+(p.texto?'<details><summary class="more">Ver texto</summary><div class="nt">'+esc(p.texto)+'</div></details>':'')
+    +(p.estado==='para-revisar'?'<div class="row"><button class="btn okb" onclick="chAprobar(\''+id+'\',this)">Aprobar</button><button class="btn" onclick="this.parentNode.nextSibling.classList.add(\'on\')">Pedir cambio</button></div>'
+      +'<div class="coment"><textarea placeholder="¿Qué te gustaría cambiar?"></textarea><div class="row"><button class="btn pri" onclick="chCambio(\''+id+'\',this)">Enviar pedido</button></div></div>':'')
+    +'</div></div>';
+}
+function cargarMini(id){
+  var pintar=function(r){ document.querySelectorAll('[data-img="'+id+'"]').forEach(function(el){ el.innerHTML=r&&r.base64?'<img alt="" src="data:'+r.tipo+';base64,'+r.base64+'">':'🖼️'; }); };
+  if(CACHE[id]) return pintar(CACHE[id]);
+  get({accion:'imagen',id:id}).then(function(r){CACHE[id]=r;pintar(r)}).catch(function(){pintar(null)});
+}
+function chAprobar(id,b){ b.disabled=true;
+  post({accion:'aprobar',pieza:id}).then(function(r){ if(!r.ok){b.disabled=false;toast('No se pudo guardar');return}
+    var p=piezaPorId(id); if(p){p.estado='aprobado';p.aprobado_fecha=new Date().toISOString()} (S.datos.feedback=S.datos.feedback||[]).push({pieza:id,accion:'aprobar',fecha:new Date().toISOString()});
+    toast('¡Aprobado! Gracias'); dibujarNav(); vMensajes(); }); }
+function chCambio(id,b){ var t=b.closest('.coment').querySelector('textarea').value.trim(); if(!t){toast('Contanos qué te gustaría cambiar');return} b.disabled=true;
+  post({accion:'cambio',pieza:id,comentario:t}).then(function(r){ if(!r.ok){b.disabled=false;toast('No se pudo enviar');return}
+    var p=piezaPorId(id); if(p){p.estado='cambio-pedido';p.comentario=t} (S.datos.feedback=S.datos.feedback||[]).push({pieza:id,accion:'cambio',comentario:t,fecha:new Date().toISOString()});
+    toast('Listo, te mandamos la versión nueva por acá'); dibujarNav(); vMensajes(); }); }
+function adjuntar(files){
+  S.pend=S.pend||[];
+  Array.prototype.forEach.call(files,function(f){
+    var a={nombre:f.name,tipo:f.type||'application/octet-stream',estado:'subiendo'}; S.pend.push(a);
+    if(f.size/1048576>MAX_MB){ a.estado='err'; toast(f.name+': muy pesado (máx. '+MAX_MB+' MB)'); return; }
+    var rd=new FileReader(); rd.onload=function(){
+      post({accion:'subir',nombre:f.name,tipo:a.tipo,para:'chat',base64:String(rd.result).split(',')[1]}).then(function(r){
+        if(r.ok){a.estado='ok';a.id=r.id;(S.datos.material=S.datos.material||[]).push({id:r.id,nombre:f.name,para:'chat',fecha:new Date().toISOString()})} else a.estado='err'; pintarTray();
+      }).catch(function(){a.estado='err';pintarTray()});
+    }; rd.readAsDataURL(f);
+  });
+  pintarTray();
+}
+function pintarTray(){ var t=$('tray'); if(!t) return; t.innerHTML=(S.pend||[]).map(function(a,k){return '<span class="chip-a">'+(a.estado==='ok'?'✓':a.estado==='err'?'⚠️':'⏳')+' '+esc(a.nombre)+' <button aria-label="Quitar" onclick="quitarAdj('+k+')">✕</button></span>'}).join(''); }
+function quitarAdj(k){ S.pend.splice(k,1); pintarTray(); }
 function mandarMsg(b){
-  var t=$('txt').value.trim(); if(!t) {$('txt').focus();return}
-  b.disabled=true; post({accion:'mensaje',texto:t}).then(function(r){ b.disabled=false; if(r.ok){S.datos.mensajes.push({de:'cliente',texto:t,fecha:new Date().toISOString()});vMensajes()} else toast('No se pudo enviar') });
+  var t=$('txt').value.trim(), pend=S.pend||[];
+  if(pend.some(function(a){return a.estado==='subiendo'})){ toast('Esperá a que terminen de subir las fotos'); return; }
+  var adj=pend.filter(function(a){return a.estado==='ok'}).map(function(a){return {id:a.id,nombre:a.nombre,tipo:a.tipo}});
+  if(!t&&!adj.length){$('txt').focus();return}
+  b.disabled=true; post({accion:'mensaje',texto:t,adjuntos:adj}).then(function(r){ b.disabled=false;
+    if(r.ok){ S.datos.mensajes.push({de:'cliente',texto:t,adjuntos:adj,fecha:new Date().toISOString()}); S.pend=[]; S.borrador=''; vMensajes(); } else toast('No se pudo enviar') });
 }
 
 // ---------- Bienvenida (alta) ----------
