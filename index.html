@@ -72,6 +72,10 @@ textarea:focus,input:focus{outline:2px solid var(--acc);outline-offset:1px}
 .item .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bar{height:6px;border-radius:6px;background:var(--line);overflow:hidden;width:90px}.bar i{display:block;height:100%;background:var(--acc);width:0}
 .btn:disabled{opacity:.4;cursor:default}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50;opacity:0;transition:opacity .15s}.modal.on{opacity:1}
+.modal-c{background:var(--card);color:var(--tx);border-radius:18px;padding:22px 20px 16px;width:100%;max-width:360px;box-shadow:0 20px 50px rgba(0,0,0,.25);transform:translateY(8px);transition:transform .15s}.modal.on .modal-c{transform:none}
+.modal-c h3{font-size:18px;font-weight:700;margin-bottom:6px}.modal-c p{color:var(--tx2);font-size:15px;margin-bottom:16px}
+.modal-b{display:flex;gap:8px}.modal-b .btn{flex:1}.btn.peligro{background:var(--bad);border-color:var(--bad);color:#fff}
 .semnav{display:flex;justify-content:space-between;gap:8px;margin-bottom:14px}.semnav .btn{flex:0 0 auto}
 .descartar{display:block;margin-top:8px;font-size:13px;color:var(--tx3);text-decoration:underline}.pz-no{color:var(--tx3)}
 .pz-ok{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;font-size:13px;color:var(--ok)}
@@ -487,10 +491,11 @@ function chAprobar(id,b){ b.disabled=true;
     var p=piezaPorId(id); if(p){p.estado='aprobado';p.aprobado_fecha=new Date().toISOString()} (S.datos.feedback=S.datos.feedback||[]).push({pieza:id,accion:'aprobar',fecha:new Date().toISOString()});
     toast('¡Aprobado! Gracias'); dibujarNav(); vMensajes(); }); }
 function descartar(id,b){
-  var p=piezaPorId(id); if(!confirm('¿Descartar «'+((p&&p.titulo)||'esta pieza')+'»? No se va a publicar.')) return; b.disabled=true;
+  var p=piezaPorId(id);
+  preguntar_('¿Descartar esta pieza?','«'+((p&&p.titulo)||'Esta pieza')+'» no se va a publicar.','Sí, descartar','Volver',true).then(function(ok){ if(!ok) return; b.disabled=true;
   post({accion:'descartar',pieza:id}).then(function(r){ if(!r.ok){b.disabled=false;toast('No se pudo guardar');return}
     if(p) p.estado='descartado'; (S.datos.feedback=S.datos.feedback||[]).push({pieza:id,accion:'descartar',fecha:new Date().toISOString()});
-    toast('Descartada: no se publica'); dibujarNav(); if(S.tab==='mensajes') vMensajes(); else dibujar(); }); }
+    toast('Descartada: no se publica'); dibujarNav(); if(S.tab==='mensajes') vMensajes(); else dibujar(); }); }); }
 function chCambio(id,b){ var t=b.closest('.coment').querySelector('textarea').value.trim(); if(!t){toast('Contanos qué te gustaría cambiar');return} b.disabled=true;
   post({accion:'cambio',pieza:id,comentario:t}).then(function(r){ if(!r.ok){b.disabled=false;toast('No se pudo enviar');return}
     var p=piezaPorId(id); if(p){p.estado='cambio-pedido';p.comentario=t} (S.datos.feedback=S.datos.feedback||[]).push({pieza:id,accion:'cambio',comentario:t,fecha:new Date().toISOString()});
@@ -542,8 +547,22 @@ function editarAlta(){var a=S.datos.alta;S._snap=JSON.parse(JSON.stringify(a.res
 function cancelarEdicion(){
   var a=S.datos.alta, qs=(a.preguntas&&a.preguntas.length)?a.preguntas:PREGUNTAS_BASE, cambio=false;
   qs.forEach(function(q){var el=$('q_'+q.id); if(el && el.value!==((S._snap||{})[q.id]||'')) cambio=true});
-  if(cambio && !confirm('¿Salir sin guardar? Se descartan los cambios que hiciste.')) return;
-  a.respuestas=S._snap||a.respuestas; a.enviado=true; S._editando=false; vAlta();
+  var salir=function(){ a.respuestas=S._snap||a.respuestas; a.enviado=true; S._editando=false; vAlta(); };
+  if(!cambio) return salir();
+  preguntar_('¿Salir sin guardar?','Se descartan los cambios que hiciste.','Salir sin guardar','Seguir editando',true).then(function(ok){ if(ok) salir(); });
+}
+// Ventana de confirmación propia (en lugar del cartel del navegador)
+function preguntar_(titulo,texto,si,no,peligro){
+  return new Promise(function(res){
+    var d=document.createElement('div'); d.className='modal';
+    d.innerHTML='<div class="modal-c" role="alertdialog" aria-modal="true" aria-labelledby="mdT"><h3 id="mdT">'+esc(titulo)+'</h3>'+(texto?'<p>'+esc(texto)+'</p>':'')
+      +'<div class="modal-b"><button class="btn" data-r="0">'+esc(no||'Cancelar')+'</button><button class="btn '+(peligro?'peligro':'pri')+'" data-r="1">'+esc(si||'Aceptar')+'</button></div></div>';
+    var cerrar=function(v){ document.removeEventListener('keydown',tecla); d.classList.remove('on'); setTimeout(function(){d.remove()},150); res(v); };
+    var tecla=function(e){ if(e.key==='Escape') cerrar(false); };
+    d.addEventListener('click',function(e){ if(e.target===d) return cerrar(false); var r=e.target.getAttribute&&e.target.getAttribute('data-r'); if(r!=null) cerrar(r==='1'); });
+    document.addEventListener('keydown',tecla);
+    document.body.appendChild(d); requestAnimationFrame(function(){ d.classList.add('on'); d.querySelector('[data-r="1"]').focus(); });
+  });
 }
 function guardarResp(el){
   if(S._editando) return;   // editando respuestas ya enviadas: se guarda todo junto con "Mandar cambios"
