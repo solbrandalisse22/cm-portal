@@ -73,6 +73,7 @@ textarea:focus,input:focus{outline:2px solid var(--acc);outline-offset:1px}
 .bar{height:6px;border-radius:6px;background:var(--line);overflow:hidden;width:90px}.bar i{display:block;height:100%;background:var(--acc);width:0}
 .btn:disabled{opacity:.4;cursor:default}
 .semnav{display:flex;justify-content:space-between;gap:8px;margin-bottom:14px}.semnav .btn{flex:0 0 auto}
+.descartar{display:block;margin-top:8px;font-size:13px;color:var(--tx3);text-decoration:underline}.pz-no{color:var(--tx3)}
 .pz-ok{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;font-size:13px;color:var(--ok)}
 .chat{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
 .adj{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.adj-i{width:84px;height:84px;border-radius:10px;overflow:hidden;background:rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;font-size:20px}.adj-i img{width:100%;height:100%;object-fit:cover}
@@ -244,14 +245,14 @@ function ir(t){ if(S._editando){var a=S.datos.alta;a.respuestas=S._snap||a.respu
 function cabecera(titulo,sub){return '<div class="mlogo"><div class="marca" style="font-size:19px"><span>tu </span><b>cm</b><span> digital</span></div></div><header class="top"><div><div class="hi">'+esc(S.datos.cliente.nombre)+'</div><h1>'+titulo+'</h1>'+(sub?'<p class="sub">'+sub+'</p>':'')+'</div></header>'}
 
 // ---------- Tu semana ----------
-var ESTADO={'para-revisar':['b-rev','Para revisar'],'aprobado':['b-ok','Aprobado ✓'],'cambio-pedido':['b-cam','Cambio pedido']};
-function semanasConAprobadas(){ return todasPiezas().filter(function(s){return s.lunes!=='muestra'&&(s.piezas||[]).some(function(p){return p.estado==='aprobado'||p.aprobado_fecha})}); }
+var ESTADO={'para-revisar':['b-rev','Para revisar'],'aprobado':['b-ok','Aprobado ✓'],'cambio-pedido':['b-cam','Cambio pedido'],'descartado':['b-no','Descartada']};
+function semanasConAprobadas(){ return todasPiezas().filter(function(s){return s.lunes!=='muestra'&&(s.piezas||[]).some(function(p){return p.estado!=='descartado'&&(p.estado==='aprobado'||p.aprobado_fecha)})}); }
 function vSemana(){
   if(S.datos.cliente.fase==='alta') return vSemanaRevision();
   var sems=semanasConAprobadas();
   if(!sems.length){ $('main').innerHTML=cabecera('Tu semana')+'<div class="empty">'+ICON.vacio+'<p>Todavía no aprobaste publicaciones.<br>Las piezas te llegan en <b>Mandar material</b>: cuando las aprobás, aparecen acá.</p></div>'; return; }
   if(S.semIdx==null||S.semIdx>=sems.length) S.semIdx=sems.length-1;
-  var s=sems[S.semIdx], ps=(s.piezas||[]).filter(function(p){return p.estado==='aprobado'||p.aprobado_fecha})
+  var s=sems[S.semIdx], ps=(s.piezas||[]).filter(function(p){return p.estado!=='descartado'&&(p.estado==='aprobado'||p.aprobado_fecha)})
     .map(function(p){return {p:p,t:cuandoDe(p,s)}}).sort(function(a,b){return (a.t||0)-(b.t||0)});
   var h=cabecera(esc(s.titulo||'Tu semana'),ps.length+' publicaciones aprobadas')
     +'<div class="semnav"><button class="btn" '+(S.semIdx>0?'':'disabled')+' onclick="S.semIdx--;vSemana()">‹ Semana anterior</button><button class="btn" '+(S.semIdx<sems.length-1?'':'disabled')+' onclick="S.semIdx++;vSemana()">Semana siguiente ›</button></div><div class="grid">';
@@ -264,7 +265,7 @@ function vSemana(){
       +(p.texto?'<div class="cap" id="cap_'+i+'">'+esc(p.texto)+'</div><button class="more" onclick="verMas('+i+',this)">Ver texto completo</button>':'')
       +(p.stickers?'<div class="stk">📌 Al publicar: '+esc(p.stickers)+'</div>':'')
       +(!ok?'<div class="stk">Estamos rehaciendo esta pieza: la versión nueva te llega en Mandar material.</div>'
-        :'<div class="row"><button class="btn" onclick="abrirCambio('+i+')">Pedir un cambio</button></div><div class="coment" id="cm_'+i+'"><textarea id="ct_'+i+'" placeholder="¿Qué te gustaría cambiar?"></textarea><div class="err" id="ce_'+i+'"></div><div class="row"><button class="btn pri" onclick="pedirCambio(\''+esc(p.id)+'\','+i+',this)">Enviar pedido</button></div></div>')
+        :'<div class="row"><button class="btn" onclick="abrirCambio('+i+')">Pedir un cambio</button><button class="btn" onclick="descartar(\''+esc(p.id)+'\',this)">🗑️ Descartar</button></div><div class="coment" id="cm_'+i+'"><textarea id="ct_'+i+'" placeholder="¿Qué te gustaría cambiar?"></textarea><div class="err" id="ce_'+i+'"></div><div class="row"><button class="btn pri" onclick="pedirCambio(\''+esc(p.id)+'\','+i+',this)">Enviar pedido</button></div></div>')
       +'</div></article>'; });
   $('main').innerHTML=h+'</div>';
   ps.forEach(function(x,i){ if((x.p.archivos||[]).length) cargarImgP(x.p,i,0); });
@@ -318,7 +319,7 @@ function cuandoDe(p,sem){
 function piezasAgenda(){
   var l=[], sems=(S.datos.historial_semanas||[]).concat(S.datos.semana?[S.datos.semana]:[]);
   sems.forEach(function(sem){ if(sem.lunes==='muestra') return;
-    (sem.piezas||[]).forEach(function(p){ if(p.estado==='aprobado'||p.aprobado_fecha) l.push({p:p,t:cuandoDe(p,sem),sem:sem}) }) });
+    (sem.piezas||[]).forEach(function(p){ if(p.estado!=='descartado'&&(p.estado==='aprobado'||p.aprobado_fecha)) l.push({p:p,t:cuandoDe(p,sem),sem:sem}) }) });
   return l;
 }
 var TIPO={post:['🖼️','Post'],carrusel:['🗂️','Carrusel'],reel:['🎬','Reel'],historia:['📱','Historia']};
@@ -441,7 +442,7 @@ function vMensajes(){
   S._img=[];
   l.forEach(function(x){
     if(x.fb){ var p=piezaPorId(x.fb.pieza), tt=p?p.titulo:x.fb.pieza;
-      h+='<div class="msg cliente">'+(x.fb.accion==='aprobar'?'✅ Aprobé «'+esc(tt)+'»':'✏️ Cambio en «'+esc(tt)+'»: '+esc(x.fb.comentario||''))+'<small>'+fecha(x.t)+'</small></div>'; return; }
+      h+='<div class="msg cliente">'+(x.fb.accion==='aprobar'?'✅ Aprobé «'+esc(tt)+'»':x.fb.accion==='descartar'?'🗑️ Descarté «'+esc(tt)+'»':'✏️ Cambio en «'+esc(tt)+'»: '+esc(x.fb.comentario||''))+'<small>'+fecha(x.t)+'</small></div>'; return; }
     var m=x.m, yo=m.de==='cliente';
     h+='<div class="msg '+(yo?'cliente':'cm')+'">'+(m.texto?esc(m.texto):'');
     if((m.adjuntos||[]).length){ h+='<div class="adj">'+m.adjuntos.map(function(a){
@@ -464,6 +465,7 @@ function vMensajes(){
   S._cantChat=l.length;
 }
 function tarjetaChat(p){
+  if(p.estado==='descartado') return '<div class="pz pz-ok pz-no"><span>🗑️ «'+esc(p.titulo||'')+'» descartada</span></div>';
   if(p.estado==='aprobado') return '<div class="pz pz-ok"><span>✓ «'+esc(p.titulo||'')+'» aprobada · ya está en Tu semana</span><button class="more" onclick="ir(\'semana\')">Ver</button></div>';
   var e=ESTADO[p.estado]||ESTADO['para-revisar'], id=esc(p.id), tp=(TIPO[p.tipo]||['📌','Publicación'])[1];
   (p.archivos||[]).forEach(function(a){S._img.push(a)});
@@ -471,7 +473,8 @@ function tarjetaChat(p){
     +'<div class="pz-b"><div class="meta"><span>'+esc(tp)+(p.dia?' · '+esc(p.dia):'')+(p.hora?' · '+esc(p.hora)+' hs':'')+'</span><span class="badge '+e[0]+'">'+e[1]+'</span></div>'
     +'<div class="tit">'+esc(p.titulo||'')+'</div>'+(p.texto?'<details><summary class="more">Ver texto</summary><div class="nt">'+esc(p.texto)+'</div></details>':'')
     +(p.estado==='para-revisar'?'<div class="row"><button class="btn okb" onclick="chAprobar(\''+id+'\',this)">Aprobar</button><button class="btn" onclick="this.parentNode.nextSibling.classList.add(\'on\')">Pedir cambio</button></div>'
-      +'<div class="coment"><textarea placeholder="¿Qué te gustaría cambiar?"></textarea><div class="row"><button class="btn pri" onclick="chCambio(\''+id+'\',this)">Enviar pedido</button></div></div>':'')
+      +'<div class="coment"><textarea placeholder="¿Qué te gustaría cambiar?"></textarea><div class="row"><button class="btn pri" onclick="chCambio(\''+id+'\',this)">Enviar pedido</button></div></div>'
+      +'<button class="descartar" onclick="descartar(\''+id+'\',this)">🗑️ Descartar, no la quiero</button>':'')
     +'</div></div>';
 }
 function cargarMini(id){
@@ -483,6 +486,11 @@ function chAprobar(id,b){ b.disabled=true;
   post({accion:'aprobar',pieza:id}).then(function(r){ if(!r.ok){b.disabled=false;toast('No se pudo guardar');return}
     var p=piezaPorId(id); if(p){p.estado='aprobado';p.aprobado_fecha=new Date().toISOString()} (S.datos.feedback=S.datos.feedback||[]).push({pieza:id,accion:'aprobar',fecha:new Date().toISOString()});
     toast('¡Aprobado! Gracias'); dibujarNav(); vMensajes(); }); }
+function descartar(id,b){
+  var p=piezaPorId(id); if(!confirm('¿Descartar «'+((p&&p.titulo)||'esta pieza')+'»? No se va a publicar.')) return; b.disabled=true;
+  post({accion:'descartar',pieza:id}).then(function(r){ if(!r.ok){b.disabled=false;toast('No se pudo guardar');return}
+    if(p) p.estado='descartado'; (S.datos.feedback=S.datos.feedback||[]).push({pieza:id,accion:'descartar',fecha:new Date().toISOString()});
+    toast('Descartada: no se publica'); dibujarNav(); if(S.tab==='mensajes') vMensajes(); else dibujar(); }); }
 function chCambio(id,b){ var t=b.closest('.coment').querySelector('textarea').value.trim(); if(!t){toast('Contanos qué te gustaría cambiar');return} b.disabled=true;
   post({accion:'cambio',pieza:id,comentario:t}).then(function(r){ if(!r.ok){b.disabled=false;toast('No se pudo enviar');return}
     var p=piezaPorId(id); if(p){p.estado='cambio-pedido';p.comentario=t} (S.datos.feedback=S.datos.feedback||[]).push({pieza:id,accion:'cambio',comentario:t,fecha:new Date().toISOString()});
