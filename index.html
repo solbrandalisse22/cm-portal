@@ -193,12 +193,20 @@ function post(obj){
 }
 
 // ---------- arranque ----------
+function entrarConLink(){
+  var v=$('lnk').value.trim(), m=v.match(/[?&]c=([^&#\s]+)/);
+  if(!m){ $('lnkErr').textContent='Ese link no parece el de tu portal. Copialo entero desde el mail.'; return; }
+  var c=decodeURIComponent(m[1]); guardarLocal('cm_clave',c); location.replace(location.pathname+'?c='+encodeURIComponent(c));
+}
 function init(){
   var p=new URLSearchParams(location.search);
   S.demo=p.get('demo')==='1';
   S.clave=p.get('c')||leerLocal('cm_clave');
   if(p.get('c')) guardarLocal('cm_clave',p.get('c'));
-  if(!S.clave && !S.demo){ $('main').innerHTML='<div class="empty">'+ICON.vacio+'<h1>Hola 👋</h1><p class="sub" style="margin-top:6px">Para entrar, abrí el link personal que te mandamos por mail.</p></div>'; return; }
+  // que la dirección siempre lleve la clave: así "Agregar a inicio" guarda el acceso directo a SU portal
+  if(S.clave && !p.get('c') && !S.demo){ try{ history.replaceState(null,'',location.pathname+'?c='+encodeURIComponent(S.clave)); }catch(e){} }
+  if(!S.clave && !S.demo){ $('main').innerHTML='<div class="empty">'+ICON.vacio+'<h1>Hola 👋</h1><p class="sub" style="margin-top:6px">Para entrar, abrí el link personal que te mandamos por mail.</p>'
+    +'<p class="sub" style="margin-top:14px">¿Lo abriste desde el ícono de inicio? Pegá acá el link del mail:</p><div class="row" style="max-width:420px;margin:8px auto 0"><input id="lnk" placeholder="https://…?c=…" style="flex:1"><button class="btn pri" style="flex:0 0 auto" onclick="entrarConLink()">Entrar</button></div><div class="err" id="lnkErr"></div></div>'; return; }
   cargar();
 }
 // ---------- Guía de bienvenida (primera vez) ----------
