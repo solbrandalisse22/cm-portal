@@ -77,6 +77,9 @@ textarea:focus,input:focus{outline:2px solid var(--acc);outline-offset:1px}
 .modal-c{background:var(--card);color:var(--tx);border-radius:18px;padding:22px 20px 16px;width:100%;max-width:360px;box-shadow:0 20px 50px rgba(0,0,0,.25);transform:translateY(8px);transition:transform .15s}.modal.on .modal-c{transform:none}
 .modal-c h3{font-size:18px;font-weight:700;margin-bottom:6px}.modal-c p{color:var(--tx2);font-size:15px;margin-bottom:16px}
 .modal-b{display:flex;gap:8px}.modal-b .btn{flex:1}.btn.peligro{background:var(--bad);border-color:var(--bad);color:#fff}
+.ayuda{flex:0 0 auto;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--tx2);font-weight:700;font-size:16px}
+.guia{position:relative;text-align:center;padding-top:28px}.guia p{text-align:center}.g-ic{font-size:40px;line-height:1;margin-bottom:12px;color:var(--acc);display:flex;justify-content:center}.g-ic svg{width:44px;height:44px}
+.g-skip{position:absolute;top:12px;right:14px;font-size:13px;color:var(--tx3)}.g-dots{display:flex;gap:6px;justify-content:center;margin:-4px 0 16px}.g-dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}.g-dots i.on{background:var(--acc);width:18px;border-radius:4px}
 .semnav{display:flex;justify-content:space-between;gap:8px;margin-bottom:14px}.semnav .btn{flex:0 0 auto}
 .descartar{display:block;margin-top:8px;font-size:13px;color:var(--tx3);text-decoration:underline}.pz-no{color:var(--tx3)}
 .pz-ok{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;font-size:13px;color:var(--ok)}
@@ -198,6 +201,37 @@ function init(){
   if(!S.clave && !S.demo){ $('main').innerHTML='<div class="empty">'+ICON.vacio+'<h1>Hola 👋</h1><p class="sub" style="margin-top:6px">Para entrar, abrí el link personal que te mandamos por mail.</p></div>'; return; }
   cargar();
 }
+// ---------- Guía de bienvenida (primera vez) ----------
+function claveGuia(){ return 'cm_guia_'+(S.datos.cliente.fase==='alta'?'alta':'activo')+'_'+(S.demo?'demo':S.clave); }
+function pasosGuia(){
+  var alta=S.datos.cliente.fase==='alta', manual=!(S.datos.semana&&S.datos.semana.publicacion==='metricool');
+  var ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  var inicio={ic:'📲',t:'Tenela a mano',x:(ios?'En el iPhone: tocá Compartir ⬆️ abajo y elegí <b>"Agregar a inicio"</b>.':'En el celu: tocá el menú ⋮ del navegador y elegí <b>"Instalar app"</b> o <b>"Agregar a pantalla de inicio"</b>.')+' Así la abrís como una app. Cuando hay algo nuevo, te aparece un <b>punto rojo</b>.'};
+  if(alta) return [
+    {ic:'👋',t:'¡Bienvenido/a!',x:'Este es tu portal de <b>tu cm digital</b>. Desde acá vamos a armar juntos el Instagram de <b>'+esc(S.datos.cliente.nombre)+'</b>. Te mostramos cómo funciona en un minuto.'},
+    {ic:ICON.alta,t:'Primero, contanos de tu negocio',x:'En <b>Bienvenida</b> respondé unas preguntas y subí tu logo y algunas fotos. Se guarda solo: lo podés completar de a poco.'},
+    {ic:ICON.mensajes,t:'Mandar material',x:'Es nuestro chat: escribinos dudas o ideas y mandá fotos con el 📎. Cuando armemos tu <b>muestra</b>, te llega acá para aprobar o pedir cambios.'},
+    inicio];
+  return [
+    {ic:'👋',t:'¡Bienvenido/a a tu portal!',x:'Acá trabajamos juntos el Instagram de <b>'+esc(S.datos.cliente.nombre)+'</b>. Te mostramos cómo funciona en 4 pasos.'},
+    {ic:ICON.mensajes,t:'Mandar material',x:'Contanos qué pasó en la semana, mandá fotos con el 📎 y pedí lo que necesites. Acá mismo te llegan las publicaciones para <b>aprobar</b>, <b>pedir un cambio</b> o <b>descartar</b>.'},
+    {ic:ICON.semana,t:'Tu semana',x:'Lo que aprobás pasa acá, ordenado por día. Podés mirar semanas anteriores y pedir un cambio de algo ya aprobado.'},
+    {ic:ICON.agenda,t:'Agenda',x:manual?'Todo lo que viene y lo que ya salió. Unos minutos antes de cada publicación te llega un mail con la imagen y el texto; cuando la subas, tocá <b>"Sí"</b> en "¿La publicaste?".':'Todo lo que viene y lo que ya salió. Lo aprobado se publica solo en su día y horario, y acá ves cuando ya está en tu perfil.'},
+    inicio];
+}
+function guia(){
+  var ps=pasosGuia(), i=0, d=document.createElement('div'); d.className='modal';
+  var pintar=function(){ var p=ps[i], ult=i===ps.length-1;
+    d.innerHTML='<div class="modal-c guia" role="dialog" aria-modal="true" aria-labelledby="gT"><button class="g-skip" data-a="fin">Saltar</button>'
+      +'<div class="g-ic">'+p.ic+'</div><h3 id="gT">'+p.t+'</h3><p>'+p.x+'</p>'
+      +'<div class="g-dots">'+ps.map(function(_,k){return '<i class="'+(k===i?'on':'')+'"></i>'}).join('')+'</div>'
+      +'<div class="modal-b">'+(i?'<button class="btn" data-a="ant">Anterior</button>':'')+'<button class="btn pri" data-a="'+(ult?'fin':'sig')+'">'+(ult?'¡Empezar!':'Siguiente')+'</button></div></div>';
+    var b=d.querySelector('.btn.pri'); if(b) b.focus(); };
+  var cerrar=function(){ guardarLocal(claveGuia(),'1'); document.removeEventListener('keydown',tecla); d.classList.remove('on'); setTimeout(function(){d.remove()},150); };
+  var tecla=function(e){ if(e.key==='Escape') cerrar(); if(e.key==='ArrowRight'&&i<ps.length-1){i++;pintar()} if(e.key==='ArrowLeft'&&i>0){i--;pintar()} };
+  d.addEventListener('click',function(e){ var a=e.target.getAttribute&&e.target.getAttribute('data-a'); if(a==='sig'){i++;pintar()} else if(a==='ant'){i--;pintar()} else if(a==='fin') cerrar(); });
+  document.addEventListener('keydown',tecla); document.body.appendChild(d); pintar(); requestAnimationFrame(function(){d.classList.add('on')});
+}
 function cargar(){
   return get({accion:'ver'}).then(function(d){
     if(d.error){ $('main').innerHTML='<div class="empty">'+ICON.vacio+'<h1>No pudimos abrir tu portal</h1><p class="sub" style="margin-top:6px">Revisá que el link sea el último que te mandamos.</p></div>'; return; }
@@ -205,6 +239,7 @@ function cargar(){
     if(d.cliente.fase==='alta' && !d.alta.enviado && !S._tabElegida) S.tab='alta';
     document.title='tu cm digital · '+d.cliente.nombre;
     dibujar();
+    if(!leerLocal(claveGuia())) setTimeout(guia,500);   // la primera vez que entra (y otra vez cuando pasa de alta a activo)
   }).catch(function(){ $('main').innerHTML='<div class="empty">'+ICON.vacio+'<h1>Sin conexión</h1><p class="sub" style="margin-top:6px">Revisá tu internet y volvé a intentar.</p><div class="row" style="justify-content:center"><button class="btn pri" style="flex:0 0 auto" onclick="cargar()">Reintentar</button></div></div>'; });
 }
 function tabs(){
@@ -247,7 +282,7 @@ function refrescar(){
   }).catch(function(){});
 }
 function ir(t){ if(S._editando){var a=S.datos.alta;a.respuestas=S._snap||a.respuestas;a.enviado=true;S._editando=false} S.tab=t;S._tabElegida=true;dibujar()}
-function cabecera(titulo,sub){return '<div class="mlogo"><div class="marca" style="font-size:19px"><span>tu </span><b>cm</b><span> digital</span></div></div><header class="top"><div><div class="hi">'+esc(S.datos.cliente.nombre)+'</div><h1>'+titulo+'</h1>'+(sub?'<p class="sub">'+sub+'</p>':'')+'</div></header>'}
+function cabecera(titulo,sub){return '<div class="mlogo"><div class="marca" style="font-size:19px"><span>tu </span><b>cm</b><span> digital</span></div></div><header class="top"><div><div class="hi">'+esc(S.datos.cliente.nombre)+'</div><h1>'+titulo+'</h1>'+(sub?'<p class="sub">'+sub+'</p>':'')+'</div><button class="ayuda" onclick="guia()" aria-label="Cómo funciona" title="Cómo funciona">?</button></header>'}
 
 // ---------- Tu semana ----------
 var ESTADO={'para-revisar':['b-rev','Para revisar'],'aprobado':['b-ok','Aprobado ✓'],'cambio-pedido':['b-cam','Cambio pedido'],'descartado':['b-no','Descartada']};
