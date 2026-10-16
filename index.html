@@ -266,7 +266,7 @@ function pendientes(){var n=0;todasPiezas().forEach(function(s){(s.piezas||[]).f
 function dibujar(){
   dibujarNav();
   ({semana:vSemana,agenda:vAgenda,mensajes:vMensajes,alta:vAlta,datos:vAlta})[S.tab]();
-  window.scrollTo(0,0);
+  if(S.tab==='mensajes') alFinal(); else window.scrollTo(0,0);
 }
 function dibujarNav(){
   if(S.tab==='mensajes') marcarLeidos();
@@ -301,7 +301,7 @@ function vSemana(){
   if(!sems.length){ $('main').innerHTML=cabecera('Tu semana')+'<div class="empty">'+ICON.vacio+'<p>Todavía no aprobaste publicaciones.<br>Las piezas te llegan en <b>Mandar material</b>: cuando las aprobás, aparecen acá.</p></div>'; return; }
   if(S.semIdx==null||S.semIdx>=sems.length) S.semIdx=sems.length-1;
   var s=sems[S.semIdx], ps=(s.piezas||[]).filter(function(p){return p.estado!=='descartado'&&(p.estado==='aprobado'||p.aprobado_fecha)})
-    .map(function(p){return {p:p,t:cuandoDe(p,s)}}).sort(function(a,b){return (a.t||0)-(b.t||0)});
+    .map(function(p){return {p:p,t:cuandoDe(p,s)}}).sort(function(a,b){return (b.t||0)-(a.t||0)});   // arriba el final de la semana, abajo el comienzo
   var h=cabecera(esc(s.titulo||'Tu semana'),ps.length+' publicaciones aprobadas')
     +'<div class="semnav"><button class="btn" '+(S.semIdx>0?'':'disabled')+' onclick="S.semIdx--;vSemana()">‹ Semana anterior</button><button class="btn" '+(S.semIdx<sems.length-1?'':'disabled')+' onclick="S.semIdx++;vSemana()">Semana siguiente ›</button></div><div class="grid">';
   S._sem=ps;
@@ -508,7 +508,7 @@ function vMensajes(){
     +'<textarea id="txt" rows="1" placeholder="Escribí o adjuntá fotos…" aria-label="Mensaje">'+esc(S.borrador||'')+'</textarea><button class="btn pri" onclick="mandarMsg(this)">Enviar</button></div></div>';
   $('main').innerHTML=h;
   $('txt').addEventListener('input',function(){S.borrador=this.value});
-  window.scrollTo(0,document.body.scrollHeight);
+  alFinal();
   S._img.forEach(function(id){ cargarMini(id) });
   S._cantChat=l.length;
 }
@@ -526,8 +526,12 @@ function tarjetaChat(p){
     +'</div></div>';
 }
 function enDrive(id,img){ return '<a class="drv" href="https://drive.google.com/file/d/'+encodeURIComponent(id)+'/view" target="_blank" rel="noopener" title="Abrir en Drive">'+img+'</a>'; }
+// El chat abre en lo último; mientras cargan las imágenes, sigue pegado abajo (salvo que el cliente haya subido a leer)
+function alFinal(){ S._pegado=true; var ir=function(){ if(S._pegado&&S.tab==='mensajes') window.scrollTo(0,document.documentElement.scrollHeight) }; ir(); requestAnimationFrame(ir); setTimeout(ir,300); }
+window.addEventListener('scroll',function(){ if(S.tab!=='mensajes') return; var abajo=window.innerHeight+window.scrollY>=document.documentElement.scrollHeight-150; S._pegado=abajo; },{passive:true});
 function cargarMini(id){
-  var pintar=function(r){ document.querySelectorAll('[data-img="'+id+'"]').forEach(function(el){ el.innerHTML=enDrive(id, r&&r.base64?'<img alt="" src="data:'+r.tipo+';base64,'+r.base64+'">':'🖼️'); }); };
+  var pintar=function(r){ document.querySelectorAll('[data-img="'+id+'"]').forEach(function(el){ el.innerHTML=enDrive(id, r&&r.base64?'<img alt="" src="data:'+r.tipo+';base64,'+r.base64+'">':'🖼️'); });
+    if(S._pegado&&S.tab==='mensajes') requestAnimationFrame(function(){ window.scrollTo(0,document.documentElement.scrollHeight) }); };
   if(CACHE[id]) return pintar(CACHE[id]);
   get({accion:'imagen',id:id}).then(function(r){CACHE[id]=r;pintar(r)}).catch(function(){pintar(null)});
 }
