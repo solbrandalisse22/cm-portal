@@ -351,7 +351,7 @@ function vSemanaRevision(){
       +'</div></article>';
   });
   $('main').innerHTML=h+'</div>';
-  s.piezas.forEach(function(p,i){ if((p.archivos||[]).length) cargarImg(i,0); });
+  s.piezas.forEach(function(p,i){ if((p.archivos||[]).length) cargarImgP(p,i,0); });
 }
 function cap1(t){t=t||'';return t.charAt(0).toUpperCase()+t.slice(1)}
 function verMas(i,b){var c=$('cap_'+i);c.classList.toggle('open');b.textContent=c.classList.contains('open')?'Ver menos':'Ver texto completo'}
