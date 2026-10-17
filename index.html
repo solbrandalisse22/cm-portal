@@ -331,7 +331,8 @@ function cargarImgP(p,i,k){   // vista previa con flechas para carruseles (Tu se
   get({accion:'imagen',id:id}).then(function(r){CACHE[id]=r;pintar(r)}).catch(function(){box.textContent='No se pudo cargar la vista previa'});
 }
 function vSemanaRevision(){
-  var s=S.datos.semana;
+  var s=S.datos.semana, env={}; (S.datos.mensajes||[]).forEach(function(m){(m.piezas||[]).forEach(function(id){env[id]=1})});
+  if(s&&s.lunes==='muestra') s={titulo:s.titulo,lunes:s.lunes,piezas:(s.piezas||[]).filter(function(p){return env[p.id]})};
   if(!s||!s.piezas||!s.piezas.length){ $('main').innerHTML=cabecera('Tu semana')+'<div class="empty">'+ICON.vacio+'<p>Todavía no hay publicaciones para revisar.<br>Cuando estén listas te avisamos por mail.</p></div>'; return; }
   var pen=pendientes(), apr=s.piezas.filter(function(p){return p.estado==='aprobado'}).length;
   var h=cabecera(esc(s.titulo||'Tu semana'), pen?pen+' para revisar · '+apr+' de '+s.piezas.length+' aprobadas':'¡Todo revisado! '+apr+' de '+s.piezas.length+' aprobadas');
@@ -500,7 +501,8 @@ function vMensajes(){
     h+='<small>'+fecha(m.fecha)+'</small></div>';
   });
   var mostradas={}; (S.datos.mensajes||[]).forEach(function(m){(m.piezas||[]).forEach(function(id){mostradas[id]=1})});
-  var sueltas=[]; todasPiezas().forEach(function(sem){(sem.piezas||[]).forEach(function(p){ if(p.estado==='para-revisar'&&!mostradas[p.id]) sueltas.push(p) })});
+  var sueltas=[]; todasPiezas().forEach(function(sem){ if(sem.lunes==='muestra') return;   // la muestra la ve el cliente recién cuando el responsable la aprueba y el agente se la manda en el chat
+    (sem.piezas||[]).forEach(function(p){ if(p.estado==='para-revisar'&&!mostradas[p.id]) sueltas.push(p) })});
   if(sueltas.length){ h+='<div class="msg cm">📌 Para revisar:'; sueltas.forEach(function(p){h+=tarjetaChat(p)}); h+='</div>'; }
   var pend=S.pend||[];
   h+='</div><div class="send"><div class="tray" id="tray">'+pend.map(function(a,k){return '<span class="chip-a">'+(a.estado==='ok'?'✓':a.estado==='err'?'⚠️':'⏳')+' '+esc(a.nombre)+' <button aria-label="Quitar" onclick="quitarAdj('+k+')">✕</button></span>'}).join('')+'</div>'
