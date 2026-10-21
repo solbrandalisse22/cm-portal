@@ -80,6 +80,7 @@ textarea:focus,input:focus{outline:2px solid var(--acc);outline-offset:1px}
 .ayuda{flex:0 0 auto;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--tx2);font-weight:700;font-size:16px}
 .guia{position:relative;text-align:center;padding-top:28px}.guia p{text-align:center}.g-ic{font-size:40px;line-height:1;margin-bottom:12px;color:var(--acc);display:flex;justify-content:center}.g-ic svg{width:44px;height:44px}
 .g-skip{position:absolute;top:12px;right:14px;font-size:13px;color:var(--tx3)}.g-dots{display:flex;gap:6px;justify-content:center;margin:-4px 0 16px}.g-dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}.g-dots i.on{background:var(--acc);width:18px;border-radius:4px}
+.item.fallo{border-color:var(--bad);background:var(--bad-bg)}
 .semnav{display:flex;justify-content:space-between;gap:8px;margin-bottom:14px}.semnav .btn{flex:0 0 auto}
 .descartar{display:block;margin-top:8px;font-size:13px;color:var(--tx3);text-decoration:underline}.pz-no{color:var(--tx3)}
 .pz-ok{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;font-size:13px;color:var(--ok)}
@@ -455,19 +456,30 @@ function mandarNota(b){
   var t=$('nota').value.trim(); if(!t){$('notaErr').textContent='Escribí algo antes de enviar.';return}
   b.disabled=true; post({accion:'nota',texto:t}).then(function(r){ b.disabled=false; if(r.ok){guardarLocal('cm_nota','');$('nota').value='';toast('¡Gracias! Lo usamos para la semana');(S.datos.notas=S.datos.notas||[]).push({texto:t,fecha:new Date().toISOString(),procesado:false});vMaterial()} else toast('No se pudo enviar') });
 }
+// Tipo del archivo: algunos celulares (fotos HEIC del iPhone, videos .mov) no lo informan y el puente las rechazaba
+var EXT={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',gif:'image/gif',heic:'image/heic',heif:'image/heif',mov:'video/quicktime',mp4:'video/mp4',m4v:'video/mp4','3gp':'video/3gpp',pdf:'application/pdf'};
+function tipoDe(f){ return f.type || EXT[(String(f.name).split('.').pop()||'').toLowerCase()] || 'application/octet-stream'; }
+// Sube un archivo y reintenta una vez si falla (conexión del celu, puente ocupado)
+function subirUno(f,para,cb){
+  var rd=new FileReader(); rd.onerror=function(){cb({error:'leer'})};
+  rd.onload=function(){ var cuerpo={accion:'subir',nombre:f.name,tipo:tipoDe(f),para:para,base64:String(rd.result).split(',')[1]};
+    var intento=function(n){ post(cuerpo).then(function(r){ if(r&&r.ok) cb(r); else if(n<1) setTimeout(function(){intento(n+1)},1500); else cb(r||{}) })
+      .catch(function(){ if(n<1) setTimeout(function(){intento(n+1)},1500); else cb({error:'conexion'}) }); };
+    intento(0); };
+  rd.readAsDataURL(f);
+}
+function errSubida(r){ return r&&r.error==='tipo'?'Formato no aceptado':r&&r.error==='conexion'?'Sin conexión':'No se pudo subir'; }
 function subirArchivos(files,para,listaId){
   var lista=$(listaId||'subidas'); Array.prototype.forEach.call(files,function(f,ix){
     var id='u'+Date.now()+ix, mb=f.size/1048576;
     lista.insertAdjacentHTML('beforeend','<div class="item" id="'+id+'"><span>'+(/^video/.test(f.type)?'🎬':'🖼️')+'</span><span class="n">'+esc(f.name)+'</span><span class="bar"><i></i></span></div>');
     if(mb>MAX_MB){ $(id).querySelector('.bar').outerHTML='<span class="err">Muy pesado ('+mb.toFixed(0)+' MB)</span>'; return; }
-    var rd=new FileReader(); rd.onload=function(){
-      $(id).querySelector('i').style.width='45%';
-      post({accion:'subir',nombre:f.name,tipo:f.type||'application/octet-stream',para:para,base64:String(rd.result).split(',')[1]}).then(function(r){
-        var el=$(id); if(!el) return;
-        if(r.ok){ el.querySelector('.bar').outerHTML='<span class="badge b-ok">Subido ✓</span>'; (S.datos.material=S.datos.material||[]).push({nombre:f.name,fecha:new Date().toISOString()}); }
-        else el.querySelector('.bar').outerHTML='<span class="err">No se pudo subir</span>';
-      }).catch(function(){ var el=$(id); if(el) el.querySelector('.bar').outerHTML='<span class="err">Error de conexión</span>'; });
-    }; rd.readAsDataURL(f);
+    $(id).querySelector('i').style.width='45%';
+    subirUno(f,para,function(r){
+      var el=$(id); if(!el) return;
+      if(r.ok){ el.querySelector('.bar').outerHTML='<span class="badge b-ok">Subido ✓</span>'; (S.datos.material=S.datos.material||[]).push({id:r.id,nombre:f.name,para:para,fecha:new Date().toISOString()}); }
+      else { el.classList.add('fallo'); el.querySelector('.bar').outerHTML='<span class="err">⚠️ '+errSubida(r)+'</span>'; toast('⚠️ '+f.name+': '+errSubida(r)+'. Probá subirla de nuevo.'); }
+    });
   });
 }
 
@@ -555,13 +567,12 @@ function chCambio(id,b){ var t=b.closest('.coment').querySelector('textarea').va
 function adjuntar(files){
   S.pend=S.pend||[];
   Array.prototype.forEach.call(files,function(f){
-    var a={nombre:f.name,tipo:f.type||'application/octet-stream',estado:'subiendo'}; S.pend.push(a);
+    var a={nombre:f.name,tipo:tipoDe(f),estado:'subiendo'}; S.pend.push(a);
     if(f.size/1048576>MAX_MB){ a.estado='err'; toast(f.name+': muy pesado (máx. '+MAX_MB+' MB)'); return; }
-    var rd=new FileReader(); rd.onload=function(){
-      post({accion:'subir',nombre:f.name,tipo:a.tipo,para:'chat',base64:String(rd.result).split(',')[1]}).then(function(r){
-        if(r.ok){a.estado='ok';a.id=r.id;(S.datos.material=S.datos.material||[]).push({id:r.id,nombre:f.name,para:'chat',fecha:new Date().toISOString()})} else a.estado='err'; pintarTray();
-      }).catch(function(){a.estado='err';pintarTray()});
-    }; rd.readAsDataURL(f);
+    subirUno(f,'chat',function(r){
+      if(r.ok){a.estado='ok';a.id=r.id;(S.datos.material=S.datos.material||[]).push({id:r.id,nombre:f.name,para:'chat',fecha:new Date().toISOString()})}
+      else { a.estado='err'; toast('⚠️ '+f.name+': '+errSubida(r)+'. Quitala y probá de nuevo.'); }
+      pintarTray(); });
   });
   pintarTray();
 }
