@@ -91,8 +91,17 @@ textarea:focus,input:focus{outline:2px solid var(--acc);outline-offset:1px}
 .ig-nota{font-size:13px;color:var(--tx3);margin-top:10px;max-width:560px}
 .ig-v{position:relative;max-height:90vh;overflow-y:auto;padding-top:36px}.ig-vi{position:relative;border-radius:10px;overflow:hidden;background:var(--line);margin-bottom:10px;min-height:120px;display:flex;align-items:center;justify-content:center;color:var(--tx2);font-size:13px}.ig-vi img{width:100%;display:block}.ig-vi.h img{max-height:56vh;object-fit:contain}.ig-v .meta{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--tx2);align-items:center}.ig-v .tit{font-weight:600;margin:4px 0}.ig-tx{font-size:14px;max-height:24vh;overflow-y:auto;margin-bottom:8px}
 .hbtns{display:flex;gap:8px;flex:0 0 auto}.ayuda svg{width:18px;height:18px;display:block;margin:auto}
-.idea{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px;max-width:640px}.idea .meta{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:var(--tx2);margin-bottom:8px}.idea h3{font-size:17px;font-weight:700;margin-bottom:4px}.idea p{font-size:15px;color:var(--tx2);margin-bottom:6px}.idea-p{font-size:14px!important}.idea-p b{color:var(--tx)}
-.tips{padding-left:20px;display:flex;flex-direction:column;gap:6px;color:var(--tx2);font-size:15px;max-width:640px}
+.ideas-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.idea-c{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:transform .15s,box-shadow .15s}.idea-c:hover{transform:translateY(-3px) rotate(-.4deg);box-shadow:0 8px 20px rgba(0,0,0,.1)}.idea-c:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.idea-img{aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;overflow:hidden}.idea-img img{width:100%;height:100%;object-fit:cover;display:block}.idea-em{font-size:48px;transform:rotate(-6deg);filter:drop-shadow(0 4px 6px rgba(0,0,0,.18))}
+.f-reel{background:linear-gradient(145deg,#FFB27A,#FF6B1A)}.f-carr{background:linear-gradient(145deg,#FFE9A8,#FFC93C)}.f-hist{background:linear-gradient(145deg,#E2CCFF,#A679F0)}.f-post{background:linear-gradient(145deg,#BFEBDD,#4FBF9F)}
+.idea-f{font-size:12px;font-weight:600;color:var(--tx2);padding:10px 12px 0;display:block}.idea-c h3{font-size:15px;font-weight:700;line-height:1.25;padding:4px 12px 10px;flex:1}
+.idea-bs{display:flex;gap:6px;padding:0 10px 10px}.idea-si{flex:1;background:var(--acc);color:var(--on-acc);border-radius:10px;padding:9px 6px;font-weight:600;font-size:14px}.idea-no{flex:0 0 38px;border:1px solid var(--line);border-radius:10px;color:var(--tx2);font-size:14px}
+.idea-v .idea-img{aspect-ratio:auto;height:260px;border-radius:10px;margin-bottom:10px}.idea-v .idea-img img{object-fit:contain}.idea-v .idea-f{padding:0}.idea-v h3{font-size:19px;font-weight:700;margin:4px 0 6px}.idea-v p{font-size:15px;color:var(--tx2);margin-bottom:8px}.idea-p{font-size:14px!important}.idea-p b{color:var(--tx)}.idea-nota{font-size:12px!important;color:var(--tx3)!important}
+.tips-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.tip{padding:14px;border-radius:4px 14px 14px 14px;font-size:14px;color:#2A2A2A;box-shadow:0 3px 8px rgba(0,0,0,.08)}.tip.t0{background:#FFF1B8;transform:rotate(-1deg)}.tip.t1{background:#FFD9C2;transform:rotate(1deg)}.tip.t2{background:#D5F2E7;transform:rotate(.6deg)}.tip.t3{background:#E6DAFB;transform:rotate(-.6deg)}
+.elegidas{display:flex;flex-wrap:wrap;gap:8px}.elegidas span{background:var(--acc-bg);color:var(--acc);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:500}
+.festejo{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}.festejo span{position:absolute;top:-40px;font-size:24px;animation:cae 1.4s ease-in forwards}@keyframes cae{to{transform:translateY(110vh) rotate(300deg);opacity:.2}}
+@media (min-width:900px){.ideas-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}.tips-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}}
 .semnav{display:flex;justify-content:space-between;gap:8px;margin-bottom:14px}.semnav .btn{flex:0 0 auto}
 .descartar{display:block;margin-top:8px;font-size:13px;color:var(--tx3);text-decoration:underline}.pz-no{color:var(--tx3)}
 .pz-ok{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;font-size:13px;color:var(--ok)}
@@ -399,23 +408,46 @@ function cap1(t){t=t||'';return t.charAt(0).toUpperCase()+t.slice(1)}
 function verMas(i,b){var c=$('cap_'+i);c.classList.toggle('open');b.textContent=c.classList.contains('open')?'Ver menos':'Ver texto completo'}
 var CACHE={};
 // ---------- Ideas: el board de ideas y tips del cliente ----------
+var FORMATO_IDEA={reel:['🎬','f-reel'],carrusel:['🗂️','f-carr'],historia:['📱','f-hist'],post:['🖼️','f-post']};
 function vIdeas(){
   var ideas=(S.datos.ideas||[]), nuevas=ideas.filter(function(x){return x.estado==='nueva'}).reverse(), elegidas=ideas.filter(function(x){return x.estado==='elegida'}).reverse(), tips=S.datos.tips||[];
-  var h=cabecera('Ideas','Ideas pensadas para tu negocio. Elegí las que te gusten y te las armamos.');
-  if(!nuevas.length) h+='<div class="empty">'+ICON.ideas+'<p>Ya viste todas las ideas de esta semana. Pronto sumamos nuevas.</p></div>';
-  nuevas.forEach(function(x){ var id=esc(x.id);
-    h+='<article class="idea"><div class="meta"><span class="badge b-cam">'+esc(cap1(x.formato||'Idea'))+'</span>'+(x.fecha?'<span>📅 '+esc(x.fecha)+'</span>':'')+'</div><h3>'+esc(x.titulo)+'</h3><p>'+esc(x.que||'')+'</p>'
-      +(x.por_que?'<p class="idea-p"><b>Por qué atrae:</b> '+esc(x.por_que)+'</p>':'')+(x.necesita?'<p class="idea-p"><b>Necesitamos de vos:</b> '+esc(x.necesita)+'</p>':'')
-      +(/^https:\/\//.test(x.fuente||'')?'<a class="more" href="'+esc(x.fuente)+'" target="_blank" rel="noopener">Ver fuente</a>':'')
-      +'<div class="row"><button class="btn pri" onclick="elegirIdea(\''+id+'\',\'quiero\',this)">¡Quiero esta!</button><button class="btn" onclick="elegirIdea(\''+id+'\',\'no\',this)">No me interesa</button></div></article>'; });
-  if(tips.length) h+='<h2>Tips para tu negocio</h2><ul class="tips">'+tips.map(function(t){return '<li>'+esc(t)+'</li>'}).join('')+'</ul>';
-  if(elegidas.length) h+='<h2>Las que elegiste</h2><div class="list">'+elegidas.slice(0,10).map(function(x){return '<div class="item"><span>💡</span><span class="n">'+esc(x.titulo)+'</span></div>'}).join('')+'</div>';
+  var h=cabecera('Ideas','¿Cuál te copa? Tocá una para verla y te la armamos.');
+  if(!nuevas.length) h+='<div class="empty">'+ICON.ideas+'<p>¡Las viste todas! 🎉 Pronto sumamos ideas nuevas.</p></div>';
+  else h+='<div class="ideas-grid">'+nuevas.map(function(x){ var f=FORMATO_IDEA[x.formato]||['💡','f-post'], id=esc(x.id);
+    return '<article class="idea-c" onclick="verIdea(\''+id+'\')" tabindex="0" role="button" aria-label="Ver idea: '+esc(x.titulo)+'"><div class="idea-img '+f[1]+'"'+(x.imagen?' data-pimg="'+esc(x.imagen)+'"':'')+'><span class="idea-em">'+f[0]+'</span></div>'
+      +'<span class="idea-f">'+f[0]+' '+esc(cap1(x.formato||'Idea'))+'</span><h3>'+esc(x.titulo)+'</h3>'
+      +'<div class="idea-bs"><button class="idea-si" onclick="event.stopPropagation();elegirIdea(\''+id+'\',\'quiero\',this)">¡La quiero!</button><button class="idea-no" aria-label="No me interesa" title="No me interesa" onclick="event.stopPropagation();elegirIdea(\''+id+'\',\'no\',this)">✕</button></div></article>' }).join('')+'</div>';
+  if(tips.length) h+='<h2>Tips para tu negocio</h2><div class="tips-grid">'+tips.map(function(t,k){return '<div class="tip t'+(k%4)+'">'+esc(t)+'</div>'}).join('')+'</div>';
+  if(elegidas.length) h+='<h2>Las que elegiste</h2><div class="elegidas">'+elegidas.slice(0,10).map(function(x){return '<span>💡 '+esc(x.titulo)+'</span>'}).join('')+'</div>';
   $('main').innerHTML=h;
+  document.querySelectorAll('.idea-img[data-pimg]').forEach(function(el){ pedirImg(el.getAttribute('data-pimg'),function(r){ if(el.isConnected&&r&&r.base64) el.innerHTML='<img alt="" src="data:'+r.tipo+';base64,'+r.base64+'">'; }); });
+}
+function verIdea(id){
+  var x=(S.datos.ideas||[]).filter(function(y){return y.id===id})[0]; if(!x) return;
+  var f=FORMATO_IDEA[x.formato]||['💡','f-post'], d=document.createElement('div'); d.className='modal';
+  d.innerHTML='<div class="modal-c ig-v idea-v" role="dialog" aria-modal="true" aria-label="'+esc(x.titulo)+'"><button class="g-skip" data-a="x">Cerrar</button><div class="idea-img '+f[1]+'" id="ivI"><span class="idea-em">'+f[0]+'</span></div>'
+    +'<span class="idea-f">'+f[0]+' '+esc(cap1(x.formato||'Idea'))+(x.fecha?' · 📅 '+esc(x.fecha):'')+'</span><h3>'+esc(x.titulo)+'</h3><p>'+esc(x.que||'')+'</p>'
+    +(x.por_que?'<p class="idea-p"><b>Por qué atrae:</b> '+esc(x.por_que)+'</p>':'')+(x.necesita?'<p class="idea-p"><b>Necesitamos de vos:</b> '+esc(x.necesita)+'</p>':'')
+    +(/^https:\/\//.test(x.fuente||'')?'<a class="more" href="'+esc(x.fuente)+'" target="_blank" rel="noopener">Ver fuente</a>':'')
+    +(x.imagen?'<p class="idea-nota">La imagen es un boceto: se arma con tu material.</p>':'')
+    +(x.estado==='nueva'?'<div class="row"><button class="btn" data-a="no">No me interesa</button><button class="btn pri" data-a="si">¡La quiero!</button></div>':'')+'</div>';
+  var cerrar=function(){ document.removeEventListener('keydown',tecla); d.classList.remove('on'); setTimeout(function(){d.remove()},150); };
+  var tecla=function(e){ if(e.key==='Escape') cerrar(); };
+  d.addEventListener('click',function(e){ if(e.target===d) return cerrar(); var a=e.target.getAttribute&&e.target.getAttribute('data-a'); if(a==='x') cerrar();
+    else if(a==='si'||a==='no'){ cerrar(); elegirIdea(id,a==='si'?'quiero':'no',e.target); } });
+  document.addEventListener('keydown',tecla); document.body.appendChild(d); requestAnimationFrame(function(){d.classList.add('on')});
+  if(x.imagen) pedirImg(x.imagen,function(r){ var b=d.querySelector('#ivI'); if(b&&r&&r.base64) b.innerHTML='<img alt="" src="data:'+r.tipo+';base64,'+r.base64+'">'; });
+}
+function festejo(){                                      // una pequeña lluvia de emojis al elegir una idea
+  if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var c=document.createElement('div'); c.className='festejo'; c.setAttribute('aria-hidden','true');
+  for(var i=0;i<16;i++){ var e=document.createElement('span'); e.textContent=['🎉','💡','✨','🧡'][i%4]; e.style.left=(4+Math.random()*92)+'%'; e.style.animationDelay=(Math.random()*.35)+'s'; c.appendChild(e); }
+  document.body.appendChild(c); setTimeout(function(){c.remove()},1800);
 }
 function elegirIdea(id,v,b){ b.disabled=true;
   post({accion:'idea',idea:id,valor:v}).then(function(r){ if(!r.ok){b.disabled=false;toast('No se pudo guardar');return}
     var x=(S.datos.ideas||[]).filter(function(y){return y.id===id})[0]; if(x) x.estado=v==='quiero'?'elegida':'descartada';
-    if(v==='quiero'){ (S.datos.mensajes=S.datos.mensajes||[]).push({de:'cliente',texto:'💡 Quiero esta idea: '+(x?x.titulo:''),fecha:new Date().toISOString()}); toast('¡Genial! Te escribimos por Mandar material'); } else toast('Listo, no te proponemos cosas así');
+    if(v==='quiero'){ (S.datos.mensajes=S.datos.mensajes||[]).push({de:'cliente',texto:'💡 Quiero esta idea: '+(x?x.titulo:''),fecha:new Date().toISOString()}); festejo(); toast('¡Genial! Te escribimos por Mandar material'); } else toast('Listo, no te proponemos cosas así');
     vIdeas(); }).catch(function(){b.disabled=false;toast('Sin conexión')});
 }
 
@@ -671,7 +703,7 @@ function alFinal(){ S._pegado=true; var ir=function(){ if(S._pegado&&S.tab==='me
 window.addEventListener('scroll',function(){ if(S.tab!=='mensajes') return; var abajo=window.innerHeight+window.scrollY>=document.documentElement.scrollHeight-150; S._pegado=abajo; },{passive:true});
 function cargarMini(id){
   var pintar=function(r){ document.querySelectorAll('[data-img="'+id+'"]').forEach(function(el){ el.innerHTML=enDrive(id, r&&r.base64?'<img alt="" src="data:'+r.tipo+';base64,'+r.base64+'">':'🖼️'); });
-    if(S._pegado&&S.tab==='mensajes') requestAnimationFrame(function(){ window.scrollTo(0,document.documentElement.scrollHeight) }); };
+    requestAnimationFrame(function(){ if(S._pegado&&S.tab==='mensajes') window.scrollTo(0,document.documentElement.scrollHeight) }); };
   if(CACHE[id]) return pintar(CACHE[id]);
   get({accion:'imagen',id:id}).then(function(r){CACHE[id]=r;pintar(r)}).catch(function(){pintar(null)});
 }
