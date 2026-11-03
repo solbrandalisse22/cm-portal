@@ -236,7 +236,7 @@ function pasosGuia(){
     {ic:'👋',t:'¡Bienvenido/a a tu portal!',x:'Acá trabajamos juntos el Instagram de <b>'+esc(S.datos.cliente.nombre)+'</b>. Te mostramos cómo funciona en un minuto.'},
     {ic:ICON.mensajes,t:'Mandar material',x:'Contanos qué pasó en la semana, mandá fotos con el 📎 y pedí lo que necesites. Acá mismo te llegan las publicaciones para <b>aprobar</b>, <b>pedir un cambio</b> o <b>descartar</b>.'},
     {ic:ICON.semana,t:'Tu semana',x:'Lo que aprobás pasa acá, ordenado por día. Podés mirar semanas anteriores y pedir un cambio de algo ya aprobado.'},
-    {ic:ICON.perfil,t:'Mi perfil',x:'Mirá cómo se vería tu Instagram con las publicaciones nuevas, antes de que salgan. Sirve para decidir si te gusta cómo queda todo junto.'},
+    {ic:ICON.perfil,t:'Mi perfil',x:'Mirá cómo se vería tu Instagram con lo que aprobaste, antes de que salga. Sirve para ver cómo queda todo junto.'},
     {ic:ICON.agenda,t:'Agenda',x:manual?'Todo lo que viene y lo que ya salió. Unos minutos antes de cada publicación te llega un mail con la imagen y el texto; cuando la subas, tocá <b>"Sí"</b> en "¿La publicaste?".':'Todo lo que viene y lo que ya salió. Lo aprobado se publica solo en su día y horario, y acá ves cuando ya está en tu perfil.'},
     inicio];
 }
@@ -402,13 +402,13 @@ function piezasPerfil(){
   var ahora=new Date(), alta=S.datos.cliente.fase==='alta', l=[];
   todasPiezas().forEach(function(sem){ if(sem.lunes==='muestra'&&!alta) return;
     (sem.piezas||[]).forEach(function(p){ if(p.estado==='descartado'||p.publicado===false) return;
-      var t=cuandoDe(p,sem), futura=!t||t>=ahora, aprobada=p.estado==='aprobado'||p.aprobado_fecha;
-      if(!futura&&!aprobada) return;                     // ya pasó su fecha y nunca se aprobó: no salió
+      if(p.estado!=='aprobado'&&!p.aprobado_fecha) return;   // lo que sigue pendiente en el chat no va: solo lo aprobado alguna vez
+      var t=cuandoDe(p,sem), futura=!t||t>=ahora;
       l.push({p:p,t:t,futura:futura}); }); });
   return l.sort(function(a,b){ return (b.t?b.t.getTime():Infinity)-(a.t?a.t.getTime():Infinity) });
 }
 function marcaPerfil(x){
-  var p=x.p; if(p.estado==='para-revisar') return ['rev','Para revisar']; if(p.estado==='cambio-pedido') return ['rev','En cambio'];
+  var p=x.p; if(p.estado!=='aprobado') return ['rev','En revisión'];
   if(!x.futura||!x.t) return null;
   return ['fut',x.t.toLocaleDateString('es-AR',{weekday:'short'}).replace('.','')+' '+x.t.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false})];
 }
@@ -427,12 +427,12 @@ function vPerfil(){
   var todas=piezasPerfil(), grilla=todas.filter(function(x){return x.p.tipo!=='historia'}), hist=todas.filter(function(x){return x.p.tipo==='historia'&&x.futura}).reverse();
   var u=usuarioIG(), nom=S.datos.cliente.nombre||'', logo=(S.datos.material||[]).filter(function(m){return m.para==='logo'&&m.id}).pop();
   S._perfil=todas; COLA_IMG=[];
-  var h=cabecera('Mi perfil','Así se vería tu Instagram con las publicaciones nuevas. Es una vista aproximada.')
+  var h=cabecera('Mi perfil','Así se vería tu Instagram con lo que aprobaste. Es una vista aproximada.')
     +'<div class="ig"><div class="ig-top"><div class="ig-av"'+(logo?' data-pimg="'+esc(logo.id)+'"':'')+'><span>'+esc(nom.charAt(0).toUpperCase())+'</span></div><div class="ig-id"><b>'+esc(u||nom)+'</b>'+(u?'<small>'+esc(nom)+'</small>':'')
-    +'<small>'+grilla.length+(grilla.length===1?' publicación armada con nosotros':' publicaciones armadas con nosotros')+'</small></div></div>';
+    +'<small>'+grilla.length+(grilla.length===1?' publicación aprobada':' publicaciones aprobadas')+'</small></div></div>';
   if(hist.length) h+='<div class="ig-hist">'+hist.map(function(x){ var i=todas.indexOf(x), a=(x.p.archivos||[])[0], m=marcaPerfil(x);
       return '<button class="ig-h" onclick="verPerfil('+i+')" aria-label="Ver historia '+esc(x.p.titulo||'')+'"><span class="ig-hc"'+(a?' data-pimg="'+esc(a)+'"':'')+'></span><small>'+esc(m?m[1]:'Historia')+'</small></button>' }).join('')+'</div>';
-  if(!grilla.length) h+='<div class="empty">'+ICON.perfil+'<p>Todavía no hay publicaciones para mostrar. Cuando armemos las primeras, vas a ver acá cómo quedan en tu perfil.</p></div>';
+  if(!grilla.length) h+='<div class="empty">'+ICON.perfil+'<p>Todavía no aprobaste publicaciones. Cuando apruebes las primeras en Mandar material, vas a ver acá cómo quedan en tu perfil.</p></div>';
   else h+='<div class="ig-grid">'+grilla.map(function(x){ var i=todas.indexOf(x), p=x.p, a=(p.archivos||[])[0], m=marcaPerfil(x), n=(p.archivos||[]).length;
       return '<button class="ig-c" onclick="verPerfil('+i+')" aria-label="Ver '+esc(p.titulo||'publicación')+'"><span class="ig-i"'+(a?' data-pimg="'+esc(a)+'"':'')+'>'+(a?'':'<em>'+esc(p.titulo||'')+'</em>')+'</span>'
         +(p.tipo==='reel'?'<i class="ig-t">🎬</i>':n>1?'<i class="ig-t">❐</i>':'')+(m?'<i class="ig-m '+m[0]+'">'+esc(m[1])+'</i>':'')+'</button>' }).join('')+'</div>';
