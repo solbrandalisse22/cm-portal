@@ -82,6 +82,14 @@ textarea:focus,input:focus{outline:2px solid var(--acc);outline-offset:1px}
 .g-skip{position:absolute;top:12px;right:14px;font-size:13px;color:var(--tx3)}.g-dots{display:flex;gap:6px;justify-content:center;margin:-4px 0 16px}.g-dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}.g-dots i.on{background:var(--acc);width:18px;border-radius:4px}
 .item.fallo{border-color:var(--bad);background:var(--bad-bg)}
 .fecha-c{display:flex;gap:10px;margin-bottom:12px}.fecha-c label{flex:1;font-size:13px;color:var(--tx2);display:flex;flex-direction:column;gap:4px}.fecha-c input{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--card);color:var(--tx);font:inherit}
+.ig{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;max-width:560px}
+.ig-top{display:flex;align-items:center;gap:14px;padding:14px}.ig-av{width:72px;height:72px;flex:0 0 72px;border-radius:50%;overflow:hidden;background:var(--acc-bg);color:var(--acc);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:26px;border:1px solid var(--line)}.ig-av img{width:100%;height:100%;object-fit:cover}
+.ig-id{min-width:0;display:flex;flex-direction:column;gap:2px}.ig-id b{font-size:16px;overflow:hidden;text-overflow:ellipsis}.ig-id small{color:var(--tx2);font-size:13px}
+.ig-hist{display:flex;gap:12px;overflow-x:auto;padding:0 14px 12px}.ig-h{flex:0 0 auto;width:68px;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--tx2)}.ig-h small{font-size:11px;white-space:nowrap}.ig-hc{width:60px;height:60px;border-radius:50%;overflow:hidden;background:var(--line);border:2px solid var(--acc);display:block}.ig-hc img{width:100%;height:100%;object-fit:cover;display:block}
+.ig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;border-top:1px solid var(--line)}.ig-c{position:relative;aspect-ratio:3/4;overflow:hidden;background:var(--line);display:block;padding:0}.ig-i{display:flex;align-items:center;justify-content:center;width:100%;height:100%;text-align:center}.ig-i img{width:100%;height:100%;object-fit:cover;display:block}.ig-i em{font-style:normal;font-size:11px;color:var(--tx2);padding:6px}
+.ig-t{position:absolute;top:5px;right:6px;font-style:normal;color:#fff;font-size:14px;text-shadow:0 1px 3px rgba(0,0,0,.7)}.ig-m{position:absolute;left:4px;bottom:4px;font-style:normal;font-size:10px;font-weight:600;padding:2px 6px;border-radius:999px;background:rgba(0,0,0,.65);color:#fff;white-space:nowrap}.ig-m.rev{background:var(--warn-bg);color:var(--warn)}
+.ig-nota{font-size:13px;color:var(--tx3);margin-top:10px;max-width:560px}
+.ig-v{position:relative;max-height:90vh;overflow-y:auto;padding-top:36px}.ig-vi{position:relative;border-radius:10px;overflow:hidden;background:var(--line);margin-bottom:10px;min-height:120px;display:flex;align-items:center;justify-content:center;color:var(--tx2);font-size:13px}.ig-vi img{width:100%;display:block}.ig-vi.h img{max-height:56vh;object-fit:contain}.ig-v .meta{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--tx2);align-items:center}.ig-v .tit{font-weight:600;margin:4px 0}.ig-tx{font-size:14px;max-height:24vh;overflow-y:auto;margin-bottom:8px}
 .semnav{display:flex;justify-content:space-between;gap:8px;margin-bottom:14px}.semnav .btn{flex:0 0 auto}
 .descartar{display:block;margin-top:8px;font-size:13px;color:var(--tx3);text-decoration:underline}.pz-no{color:var(--tx3)}
 .pz-ok{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;font-size:13px;color:var(--ok)}
@@ -152,6 +160,7 @@ var ICON = {
   material:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8a2 2 0 0 1 2-2h1.5l1.5-2h6l1.5 2H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><circle cx="12" cy="12.5" r="3.5"/></svg>',
   mensajes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>',
   agenda:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.2"/><circle cx="4.5" cy="12" r="1.2"/><circle cx="4.5" cy="18" r="1.2"/></svg>',
+  perfil:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>',
   datos:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>',
   alta:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.6 7.1 18.2 8 12.7 4 8.8l5.5-.8z"/></svg>',
   subir:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>',
@@ -224,9 +233,10 @@ function pasosGuia(){
     {ic:ICON.mensajes,t:'Mandar material',x:'Es nuestro chat: escribinos dudas o ideas y mandá fotos con el 📎. Cuando armemos tu <b>muestra</b>, te llega acá para aprobar o pedir cambios.'},
     inicio];
   return [
-    {ic:'👋',t:'¡Bienvenido/a a tu portal!',x:'Acá trabajamos juntos el Instagram de <b>'+esc(S.datos.cliente.nombre)+'</b>. Te mostramos cómo funciona en 4 pasos.'},
+    {ic:'👋',t:'¡Bienvenido/a a tu portal!',x:'Acá trabajamos juntos el Instagram de <b>'+esc(S.datos.cliente.nombre)+'</b>. Te mostramos cómo funciona en un minuto.'},
     {ic:ICON.mensajes,t:'Mandar material',x:'Contanos qué pasó en la semana, mandá fotos con el 📎 y pedí lo que necesites. Acá mismo te llegan las publicaciones para <b>aprobar</b>, <b>pedir un cambio</b> o <b>descartar</b>.'},
     {ic:ICON.semana,t:'Tu semana',x:'Lo que aprobás pasa acá, ordenado por día. Podés mirar semanas anteriores y pedir un cambio de algo ya aprobado.'},
+    {ic:ICON.perfil,t:'Mi perfil',x:'Mirá cómo se vería tu Instagram con las publicaciones nuevas, antes de que salgan. Sirve para decidir si te gusta cómo queda todo junto.'},
     {ic:ICON.agenda,t:'Agenda',x:manual?'Todo lo que viene y lo que ya salió. Unos minutos antes de cada publicación te llega un mail con la imagen y el texto; cuando la subas, tocá <b>"Sí"</b> en "¿La publicaste?".':'Todo lo que viene y lo que ya salió. Lo aprobado se publica solo en su día y horario, y acá ves cuando ya está en tu perfil.'},
     inicio];
 }
@@ -259,6 +269,7 @@ function tabs(){
   t.push({id:'mensajes',txt:'Mandar material'});
   t.push({id:'semana',txt:'Tu semana'});
   if(d.cliente.fase!=='alta') t.push({id:'agenda',txt:'Agenda'});
+  t.push({id:'perfil',txt:'Mi perfil'});
   if(d.cliente.fase!=='alta') t.push({id:'datos',txt:'Mis datos'});
   return t;
 }
@@ -268,7 +279,7 @@ function marcarLeidos(){var ms=S.datos.mensajes||[],u='';ms.forEach(function(m){
 function pendientes(){var n=0;todasPiezas().forEach(function(s){(s.piezas||[]).forEach(function(p){if(p.estado==='para-revisar')n++})});return n}
 function dibujar(){
   dibujarNav();
-  ({semana:vSemana,agenda:vAgenda,mensajes:vMensajes,alta:vAlta,datos:vAlta})[S.tab]();
+  ({semana:vSemana,agenda:vAgenda,perfil:vPerfil,mensajes:vMensajes,alta:vAlta,datos:vAlta})[S.tab]();
   if(S.tab==='mensajes') alFinal(); else window.scrollTo(0,0);
 }
 function dibujarNav(){
@@ -382,6 +393,70 @@ function vSemanaRevision(){
 function cap1(t){t=t||'';return t.charAt(0).toUpperCase()+t.slice(1)}
 function verMas(i,b){var c=$('cap_'+i);c.classList.toggle('open');b.textContent=c.classList.contains('open')?'Ver menos':'Ver texto completo'}
 var CACHE={};
+// ---------- Mi perfil: vista aproximada de cómo se vería su Instagram ----------
+function usuarioIG(){
+  var v=String(S.datos.cliente.instagram||((S.datos.alta||{}).respuestas||{}).instagram||'').trim(), m=v.match(/instagram\.com\/([^\/?#\s]+)/i);
+  v=(m?m[1]:v).replace(/^@/,''); return /^[\w.]+$/.test(v)?v:'';
+}
+function piezasPerfil(){
+  var ahora=new Date(), alta=S.datos.cliente.fase==='alta', l=[];
+  todasPiezas().forEach(function(sem){ if(sem.lunes==='muestra'&&!alta) return;
+    (sem.piezas||[]).forEach(function(p){ if(p.estado==='descartado'||p.publicado===false) return;
+      var t=cuandoDe(p,sem), futura=!t||t>=ahora, aprobada=p.estado==='aprobado'||p.aprobado_fecha;
+      if(!futura&&!aprobada) return;                     // ya pasó su fecha y nunca se aprobó: no salió
+      l.push({p:p,t:t,futura:futura}); }); });
+  return l.sort(function(a,b){ return (b.t?b.t.getTime():Infinity)-(a.t?a.t.getTime():Infinity) });
+}
+function marcaPerfil(x){
+  var p=x.p; if(p.estado==='para-revisar') return ['rev','Para revisar']; if(p.estado==='cambio-pedido') return ['rev','En cambio'];
+  if(!x.futura||!x.t) return null;
+  return ['fut',x.t.toLocaleDateString('es-AR',{weekday:'short'}).replace('.','')+' '+x.t.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false})];
+}
+var COLA_IMG=[], CARGANDO_IMG=0;
+function pedirImg(id,cb){
+  if(CACHE[id]) return cb(CACHE[id]);
+  COLA_IMG.push({id:id,cb:cb}); sigueCola();
+}
+function sigueCola(){                                    // de a 3, para no trabar el celu ni el puente
+  while(CARGANDO_IMG<3&&COLA_IMG.length){ (function(j){ CARGANDO_IMG++;
+    var fin=function(r){ if(r) CACHE[j.id]=r; CARGANDO_IMG--; j.cb(r); sigueCola(); };
+    if(CACHE[j.id]){ fin(CACHE[j.id]); return; }
+    get({accion:'imagen',id:j.id}).then(fin).catch(function(){fin(null)}); })(COLA_IMG.shift()); }
+}
+function vPerfil(){
+  var todas=piezasPerfil(), grilla=todas.filter(function(x){return x.p.tipo!=='historia'}), hist=todas.filter(function(x){return x.p.tipo==='historia'&&x.futura}).reverse();
+  var u=usuarioIG(), nom=S.datos.cliente.nombre||'', logo=(S.datos.material||[]).filter(function(m){return m.para==='logo'&&m.id}).pop();
+  S._perfil=todas; COLA_IMG=[];
+  var h=cabecera('Mi perfil','Así se vería tu Instagram con las publicaciones nuevas. Es una vista aproximada.')
+    +'<div class="ig"><div class="ig-top"><div class="ig-av"'+(logo?' data-pimg="'+esc(logo.id)+'"':'')+'><span>'+esc(nom.charAt(0).toUpperCase())+'</span></div><div class="ig-id"><b>'+esc(u||nom)+'</b>'+(u?'<small>'+esc(nom)+'</small>':'')
+    +'<small>'+grilla.length+(grilla.length===1?' publicación armada con nosotros':' publicaciones armadas con nosotros')+'</small></div></div>';
+  if(hist.length) h+='<div class="ig-hist">'+hist.map(function(x){ var i=todas.indexOf(x), a=(x.p.archivos||[])[0], m=marcaPerfil(x);
+      return '<button class="ig-h" onclick="verPerfil('+i+')" aria-label="Ver historia '+esc(x.p.titulo||'')+'"><span class="ig-hc"'+(a?' data-pimg="'+esc(a)+'"':'')+'></span><small>'+esc(m?m[1]:'Historia')+'</small></button>' }).join('')+'</div>';
+  if(!grilla.length) h+='<div class="empty">'+ICON.perfil+'<p>Todavía no hay publicaciones para mostrar. Cuando armemos las primeras, vas a ver acá cómo quedan en tu perfil.</p></div>';
+  else h+='<div class="ig-grid">'+grilla.map(function(x){ var i=todas.indexOf(x), p=x.p, a=(p.archivos||[])[0], m=marcaPerfil(x), n=(p.archivos||[]).length;
+      return '<button class="ig-c" onclick="verPerfil('+i+')" aria-label="Ver '+esc(p.titulo||'publicación')+'"><span class="ig-i"'+(a?' data-pimg="'+esc(a)+'"':'')+'>'+(a?'':'<em>'+esc(p.titulo||'')+'</em>')+'</span>'
+        +(p.tipo==='reel'?'<i class="ig-t">🎬</i>':n>1?'<i class="ig-t">❐</i>':'')+(m?'<i class="ig-m '+m[0]+'">'+esc(m[1])+'</i>':'')+'</button>' }).join('')+'</div>';
+  h+='</div><p class="ig-nota">Solo aparece lo que armamos en este portal. Las publicaciones que ya tenías en Instagram no se ven acá.'+(u?' <a class="more" href="https://www.instagram.com/'+encodeURIComponent(u)+'/" target="_blank" rel="noopener">Ver mi perfil real</a>':'')+'</p>';
+  $('main').innerHTML=h;
+  document.querySelectorAll('[data-pimg]').forEach(function(el){ var id=el.getAttribute('data-pimg');
+    pedirImg(id,function(r){ if(!el.isConnected) return; if(r&&r.base64) el.innerHTML='<img alt="" src="data:'+r.tipo+';base64,'+r.base64+'">'; else if(r&&/^video/.test(r.tipo||'')) el.innerHTML='<em>🎬</em>'; }); });
+}
+function verPerfil(i){
+  var x=S._perfil[i], p=x.p, k=0, n=(p.archivos||[]).length, m=marcaPerfil(x), tp=(TIPO[p.tipo]||['','Publicación'])[1], d=document.createElement('div'); d.className='modal';
+  var cuando=x.t?x.t.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'numeric'})+' · '+x.t.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false})+' hs':'Sin fecha todavía';
+  d.innerHTML='<div class="modal-c ig-v" role="dialog" aria-modal="true" aria-label="'+esc(p.titulo||tp)+'"><button class="g-skip" data-a="x">Cerrar</button><div class="ig-vi'+(p.tipo==='historia'?' h':'')+'" id="igV"></div>'
+    +'<div class="meta"><span>'+esc(tp)+' · '+esc(cuando)+'</span>'+(m&&m[0]==='rev'?'<span class="badge b-rev">'+esc(m[1])+'</span>':'')+'</div><div class="tit">'+esc(p.titulo||'')+'</div>'+(p.texto?'<div class="nt ig-tx">'+esc(p.texto)+'</div>':'')
+    +(p.estado==='para-revisar'?'<div class="row"><button class="btn pri" data-a="rev">Revisar en Mandar material</button></div>':'')+'</div>';
+  var pintar=function(){ var box=d.querySelector('#igV'); if(!n){ box.textContent='Sin imagen'; return; } box.textContent='Cargando…';
+    pedirImg(p.archivos[k],function(r){ if(!box.isConnected) return; box.innerHTML=(r&&r.base64?'<img alt="" src="data:'+r.tipo+';base64,'+r.base64+'">':(r&&/^video/.test(r.tipo||'')?enDrive(p.archivos[k],'🎬 Ver el video en Drive'):'Sin vista previa'))
+      +(n>1?'<span class="multi">'+(k+1)+'/'+n+'</span>':'')+(k>0?'<button class="nav-img" style="left:10px" data-a="ant" aria-label="Anterior">‹</button>':'')+(k<n-1?'<button class="nav-img" style="right:10px" data-a="sig" aria-label="Siguiente">›</button>':''); }); };
+  var cerrar=function(){ document.removeEventListener('keydown',tecla); d.classList.remove('on'); setTimeout(function(){d.remove()},150); };
+  var tecla=function(e){ if(e.key==='Escape') cerrar(); };
+  d.addEventListener('click',function(e){ if(e.target===d) return cerrar(); var a=e.target.getAttribute&&e.target.getAttribute('data-a');
+    if(a==='x') cerrar(); else if(a==='sig'){k++;pintar()} else if(a==='ant'){k--;pintar()} else if(a==='rev'){ cerrar(); ir('mensajes'); } });
+  document.addEventListener('keydown',tecla); document.body.appendChild(d); pintar(); requestAnimationFrame(function(){d.classList.add('on')});
+}
+
 // ---------- Agenda: todas las publicaciones (próximas y las que ya salieron) ----------
 var MESES={ene:0,feb:1,mar:2,abr:3,may:4,jun:5,jul:6,ago:7,sep:8,oct:9,nov:10,dic:11};
 function cuandoDe(p,sem){
