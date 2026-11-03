@@ -81,6 +81,7 @@ textarea:focus,input:focus{outline:2px solid var(--acc);outline-offset:1px}
 .guia{position:relative;text-align:center;padding-top:28px}.guia p{text-align:center}.g-ic{font-size:40px;line-height:1;margin-bottom:12px;color:var(--acc);display:flex;justify-content:center}.g-ic svg{width:44px;height:44px}
 .g-skip{position:absolute;top:12px;right:14px;font-size:13px;color:var(--tx3)}.g-dots{display:flex;gap:6px;justify-content:center;margin:-4px 0 16px}.g-dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}.g-dots i.on{background:var(--acc);width:18px;border-radius:4px}
 .item.fallo{border-color:var(--bad);background:var(--bad-bg)}
+.fecha-c{display:flex;gap:10px;margin-bottom:12px}.fecha-c label{flex:1;font-size:13px;color:var(--tx2);display:flex;flex-direction:column;gap:4px}.fecha-c input{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--card);color:var(--tx);font:inherit}
 .semnav{display:flex;justify-content:space-between;gap:8px;margin-bottom:14px}.semnav .btn{flex:0 0 auto}
 .descartar{display:block;margin-top:8px;font-size:13px;color:var(--tx3);text-decoration:underline}.pz-no{color:var(--tx3)}
 .pz-ok{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;font-size:13px;color:var(--ok)}
@@ -303,7 +304,7 @@ function vSemana(){
   if(!sems.length){ $('main').innerHTML=cabecera('Tu semana')+'<div class="empty">'+ICON.vacio+'<p>Todavía no aprobaste publicaciones.<br>Las piezas te llegan en <b>Mandar material</b>: cuando las aprobás, aparecen acá.</p></div>'; return; }
   if(S.semIdx==null||S.semIdx>=sems.length) S.semIdx=sems.length-1;
   var s=sems[S.semIdx], ps=(s.piezas||[]).filter(function(p){return p.estado!=='descartado'&&(p.estado==='aprobado'||p.aprobado_fecha)})
-    .map(function(p){return {p:p,t:cuandoDe(p,s)}}).sort(function(a,b){return (b.t||0)-(a.t||0)});   // arriba el final de la semana, abajo el comienzo
+    .map(function(p){return {p:p,t:cuandoDe(p,s),sem:s.lunes}}).sort(function(a,b){return (b.t||0)-(a.t||0)});   // arriba el final de la semana, abajo el comienzo
   var h=cabecera(esc(s.titulo||'Tu semana'),ps.length+' publicaciones aprobadas')
     +'<div class="semnav"><button class="btn" '+(S.semIdx>0?'':'disabled')+' onclick="S.semIdx--;vSemana()">‹ Semana anterior</button><button class="btn" '+(S.semIdx<sems.length-1?'':'disabled')+' onclick="S.semIdx++;vSemana()">Semana siguiente ›</button></div><div class="grid">';
   S._sem=ps;
@@ -315,10 +316,33 @@ function vSemana(){
       +(p.texto?'<div class="cap" id="cap_'+i+'">'+esc(p.texto)+'</div><button class="more" onclick="verMas('+i+',this)">Ver texto completo</button>':'')
       +(p.stickers?'<div class="stk">📌 Al publicar: '+esc(p.stickers)+'</div>':'')
       +(!ok?'<div class="stk">Estamos rehaciendo esta pieza: la versión nueva te llega en Mandar material.</div>'
-        :'<div class="row"><button class="btn" onclick="abrirCambio('+i+')">Pedir un cambio</button><button class="btn" onclick="descartar(\''+esc(p.id)+'\',this)">🗑️ Descartar</button></div><div class="coment" id="cm_'+i+'"><textarea id="ct_'+i+'" placeholder="¿Qué te gustaría cambiar?"></textarea><div class="err" id="ce_'+i+'"></div><div class="row"><button class="btn pri" onclick="pedirCambio(\''+esc(p.id)+'\','+i+',this)">Enviar pedido</button></div></div>')
+        :'<div class="row">'+(x.t&&x.t>new Date()&&p.publicado!==true?'<button class="btn" onclick="cambiarFecha('+i+')">📅 Cambiar fecha</button>':'')+'<button class="btn" onclick="abrirCambio('+i+')">Pedir un cambio</button><button class="btn" onclick="descartar(\''+esc(p.id)+'\',this)">🗑️ Descartar</button></div><div class="coment" id="cm_'+i+'"><textarea id="ct_'+i+'" placeholder="¿Qué te gustaría cambiar?"></textarea><div class="err" id="ce_'+i+'"></div><div class="row"><button class="btn pri" onclick="pedirCambio(\''+esc(p.id)+'\','+i+',this)">Enviar pedido</button></div></div>')
       +'</div></article>'; });
   $('main').innerHTML=h+'</div>';
   ps.forEach(function(x,i){ if((x.p.archivos||[]).length) cargarImgP(x.p,i,0); });
+}
+// Cambiar día y hora de una pieza aprobada, sin rehacerla ni volver a aprobarla
+function cambiarFecha(i){
+  var x=S._sem[i], p=x.p, dos=function(n){return (n<10?'0':'')+n}, t=x.t, h=new Date();
+  var hoy=h.getFullYear()+'-'+dos(h.getMonth()+1)+'-'+dos(h.getDate());
+  var d=document.createElement('div'); d.className='modal';
+  d.innerHTML='<div class="modal-c" role="dialog" aria-modal="true" aria-labelledby="fT"><h3 id="fT">Cambiar fecha</h3><p>«'+esc(p.titulo||'Publicación')+'». No hace falta volver a aprobarla.</p>'
+    +'<div class="fecha-c"><label>Día<input type="date" id="fD" min="'+hoy+'" value="'+t.getFullYear()+'-'+dos(t.getMonth()+1)+'-'+dos(t.getDate())+'"></label><label>Hora<input type="time" id="fH" value="'+dos(t.getHours())+':'+dos(t.getMinutes())+'"></label></div>'
+    +'<div class="err" id="fE"></div><div class="modal-b"><button class="btn" data-r="0">Cancelar</button><button class="btn pri" data-r="1">Guardar</button></div></div>';
+  var cerrar=function(){ document.removeEventListener('keydown',tecla); d.classList.remove('on'); setTimeout(function(){d.remove()},150); };
+  var tecla=function(e){ if(e.key==='Escape') cerrar(); };
+  d.addEventListener('click',function(e){ if(e.target===d) return cerrar(); var r=e.target.getAttribute&&e.target.getAttribute('data-r'); if(r==='0') return cerrar(); if(r!=='1') return;
+    var f=$('fD').value, hh=$('fH').value; if(!f||!hh){ $('fE').textContent='Elegí el día y la hora.'; return; }
+    var cuando=f+'T'+hh+':00-03:00', nueva=new Date(cuando); if(nueva<new Date()){ $('fE').textContent='Elegí un día y una hora que no hayan pasado.'; return; }
+    e.target.disabled=true;
+    var dia=nueva.toLocaleDateString('es-AR',{weekday:'long',timeZone:'America/Argentina/Cordoba'})+' '+parseInt(f.slice(8))+'/'+parseInt(f.slice(5,7));
+    post({accion:'reprogramar',pieza:p.id,semana:x.sem,cuando:cuando,dia:dia,hora:hh}).then(function(r){
+      if(!r.ok){ e.target.disabled=false; $('fE').textContent=r.error==='fecha'?'Elegí un día y una hora que no hayan pasado.':'No se pudo guardar. Probá de nuevo.'; return; }
+      p.cuando=cuando; p.dia=dia; p.hora=hh; delete p.avisado; (S.datos.feedback=S.datos.feedback||[]).push({pieza:p.id,accion:'reprogramar',comentario:cuando,fecha:new Date().toISOString()});
+      cerrar(); toast('Listo: se publica el '+dia+' a las '+hh+' hs'); vSemana();
+    }).catch(function(){ e.target.disabled=false; $('fE').textContent='Sin conexión. Probá de nuevo.'; });
+  });
+  document.addEventListener('keydown',tecla); document.body.appendChild(d); requestAnimationFrame(function(){d.classList.add('on')});
 }
 function cargarImgP(p,i,k){   // vista previa con flechas para carruseles (Tu semana)
   var id=p.archivos[k], box=$('img_'+i); if(!box) return;
@@ -504,7 +528,7 @@ function vMensajes(){
   S._img=[];
   l.forEach(function(x){
     if(x.fb){ var p=piezaPorId(x.fb.pieza), tt=p?p.titulo:x.fb.pieza;
-      h+='<div class="msg cliente">'+(x.fb.accion==='aprobar'?'✅ Aprobé «'+esc(tt)+'»':x.fb.accion==='descartar'?'🗑️ Descarté «'+esc(tt)+'»':'✏️ Cambio en «'+esc(tt)+'»: '+esc(x.fb.comentario||''))+'<small>'+fecha(x.t)+'</small></div>'; return; }
+      h+='<div class="msg cliente">'+(x.fb.accion==='aprobar'?'✅ Aprobé «'+esc(tt)+'»':x.fb.accion==='descartar'?'🗑️ Descarté «'+esc(tt)+'»':x.fb.accion==='reprogramar'?'📅 Cambié la fecha de «'+esc(tt)+'» para el '+fecha(x.fb.comentario):'✏️ Cambio en «'+esc(tt)+'»: '+esc(x.fb.comentario||''))+'<small>'+fecha(x.t)+'</small></div>'; return; }
     var m=x.m, yo=m.de==='cliente';
     h+='<div class="msg '+(yo?'cliente':'cm')+'">'+(m.texto?esc(m.texto):'');
     if((m.adjuntos||[]).length){ h+='<div class="adj">'+m.adjuntos.map(function(a){
