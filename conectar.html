@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Conectar Instagram</title>
+<meta name="robots" content="noindex">
+<style>
+:root{--bg:#F7F5F2;--card:#fff;--tx:#161616;--tx2:#5C5A57;--line:#E7E3DE;--acc:#D9480F;--on-acc:#fff}
+@media (prefers-color-scheme:dark){:root{--bg:#121212;--card:#1C1C1C;--tx:#F2F0ED;--tx2:#B3AFA9;--line:#2E2C2A;--acc:#FF7A33;--on-acc:#161616}}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;background:var(--bg);color:var(--tx);font:16px/1.5 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{width:100%;max-width:420px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;text-align:center}
+.marca{font-size:19px;margin-bottom:14px}h1{font-size:20px;margin:0 0 8px}p{color:var(--tx2);margin:0 0 18px}
+a{display:inline-block;padding:11px 18px;border-radius:12px;background:var(--acc);color:var(--on-acc);font-weight:600;text-decoration:none}
+</style></head><body><main>
+<div class="marca">tu <b>cm</b> digital</div><h1 id="t">Conectando tu cuenta…</h1><p id="x">Un momento, por favor.</p><a id="v" href="./" hidden>Volver al portal</a>
+</main><script>
+var API='https://script.google.com/macros/s/AKfycbyGJnJGTpics16rlhOZkRXrKDyzGvFZeO5peSJlI6ITBHwW8QCdMuSNoPHUCQV1MMXMJw/exec';
+function fin(t,x){document.getElementById('t').textContent=t;document.getElementById('x').textContent=x;document.getElementById('v').hidden=false}
+var q=new URLSearchParams(location.search),code=q.get('code'),state=q.get('state');
+history.replaceState(null,'',location.pathname);   // el código no queda en la barra ni en el historial
+if(q.get('error')) fin('No se conectó','Cancelaste la autorización. Podés volver a intentarlo cuando quieras desde Mis datos.');
+else if(!code||!state) fin('Falta información','Volvé a tocar "Conectar Instagram" en Mis datos.');
+else fetch(API,{method:'POST',body:JSON.stringify({accion:'ig_codigo',code:code,state:state})}).then(function(r){return r.json()}).then(function(r){
+  if(r.ok) return fin('¡Listo! 🎉','Quedó conectada la cuenta @'+r.usuario+'. Lo que apruebes se va a publicar solo.');
+  if(r.error==='otra cuenta') return fin('Es otra cuenta','Autorizaste @'+r.usuario+', pero tu cuenta registrada es @'+r.esperado+'. Entrá a Instagram con esa cuenta y volvé a intentarlo. Si cambió, avisanos.');
+  if(r.error==='permisos') return fin('Falta un permiso','Para publicar necesitamos que dejes activado el permiso de publicación. Volvé a intentarlo desde Mis datos.');
+  if(r.error==='vencido') return fin('Se venció el enlace','Volvé a tocar "Conectar Instagram" en Mis datos.');
+  fin('No se pudo conectar','Fijate que tu cuenta sea profesional (empresa o creador) y volvé a intentarlo. Si sigue igual, escribinos por el chat.');
+}).catch(function(){fin('No se pudo conectar','Revisá tu conexión y volvé a intentarlo desde Mis datos.')});
+</script></body></html>

@@ -543,7 +543,7 @@ function vAgenda(){
   lista.forEach(function(x,i){
     var p=x.p, tp=TIPO[p.tipo]||['📌','Publicación'], d=x.t?x.t.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'}):'Sin fecha';
     if(d!==dia){dia=d;h+='<h3 class="mini">'+esc(d.charAt(0).toUpperCase()+d.slice(1))+'</h3>'}
-    var manual=(x.sem.publicacion||(x.sem.avisos?'manual':''))!=='metricool', preguntar=false, est;
+    var modo=x.sem.publicacion||(x.sem.avisos?'manual':''), manual=modo!=='metricool'&&modo!=='instagram', preguntar=false, est;
     if(ver==='proximas'){ est=ESTADO[p.estado]||['b-rev','Para revisar'];
       if(p.publicado===true) est=['b-ok','✓ Publicada'];
       else if(manual && p.estado==='aprobado' && x.t && x.t-ahora<30*60000 && p.publicado!==false) preguntar=true; }   // desde 30 min antes ya puede marcarla
@@ -744,12 +744,30 @@ function mandarMsg(b){
     if(r.ok){ S.datos.mensajes.push({de:'cliente',texto:t,adjuntos:adj,fecha:new Date().toISOString()}); S.pend=[]; S.borrador=''; vMensajes(); } else toast('No se pudo enviar') });
 }
 
+// ---------- Conexión con Instagram (solo clientes habilitados) ----------
+function tarjetaIg(){
+  var ig=S.datos.cliente.ig; if(!ig) return '';
+  return '<div class="resp"><div class="rq">Instagram</div>'+(ig.conectado
+    ?'<div class="ra">Conectado como <b>@'+esc(ig.usuario)+'</b>. Lo que apruebes se publica solo en el día y la hora de tu semana.</div><div class="row" style="margin-top:10px"><button class="btn" style="flex:0 0 auto" onclick="desconectarIg(this)">Desconectar</button></div>'
+    :'<div class="ra">Conectá tu cuenta para que lo que apruebes se publique solo. Autorizás directamente en Instagram: nunca vemos tu contraseña, solo publicamos lo que aprobaste y podés desconectarla cuando quieras.</div><div class="row" style="margin-top:10px"><button class="btn pri" style="flex:0 0 auto" onclick="conectarIg(this)">Conectar Instagram</button></div>')+'</div>';
+}
+function conectarIg(b){
+  b.disabled=true;
+  post({accion:'ig_conectar'}).then(function(r){ if(r.ok&&r.url){location.href=r.url} else {b.disabled=false;toast('No se pudo abrir Instagram')} }).catch(function(){b.disabled=false;toast('No se pudo abrir Instagram')});
+}
+function desconectarIg(b){
+  preguntar_('¿Desconectar Instagram?','Lo que ya aprobaste no se va a publicar solo hasta que la vuelvas a conectar.','Desconectar','Cancelar',true).then(function(ok){ if(!ok) return;
+    b.disabled=true;
+    post({accion:'ig_desconectar'}).then(function(r){ if(r.ok){S.datos.cliente.ig={conectado:false,usuario:''};toast('Instagram desconectado');vAlta()} else {b.disabled=false;toast('No se pudo desconectar')} }).catch(function(){b.disabled=false;toast('No se pudo desconectar')});
+  });
+}
+
 // ---------- Bienvenida (alta) ----------
 function vAlta(){
   var a=S.datos.alta||{}, qs=(a.preguntas&&a.preguntas.length)?a.preguntas:PREGUNTAS_BASE, r=a.respuestas||{};
   if(a.enviado){
     var v=cabecera(S.tab==='datos'?'Mis datos':'Tus respuestas',S.tab==='datos'?'Lo que nos contaste de tu negocio. Si algo cambia (teléfono, horario, cómo querés que se vea), editalo acá y lo tenemos en cuenta desde las próximas piezas.':'Gracias por contarnos sobre tu negocio. Si algo cambió, podés editarlo cuando quieras.')
-      +'<div class="row" style="margin:0 0 18px"><button class="btn pri" style="flex:0 0 auto" onclick="editarAlta()">Editar respuestas</button></div>';
+      +'<div class="row" style="margin:0 0 18px"><button class="btn pri" style="flex:0 0 auto" onclick="editarAlta()">Editar respuestas</button></div>'+(S.tab==='datos'?tarjetaIg():'');
     qs.forEach(function(q){ var t=(r[q.id]||'').trim();
       v+='<div class="resp"><div class="rq">'+esc(q.texto)+'</div><div class="ra'+(t?'':' vacia')+'">'+(t?esc(t):'Sin responder')+'</div></div>'; });
     $('main').innerHTML=v; return; }
